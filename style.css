@@ -1,0 +1,252 @@
+/* 基本設定: モダンなダークテーマ */
+:root {
+    --primary-color: #007aff; /* プライマリカラー (モダンな青) */
+    --background-color: #1c1c1e; /* 背景色 (ダークグレー) */
+    --card-bg-color: #2c2c2e; /* カードの背景色 (少し明るいグレー) */
+    --text-color: #f2f2f7; /* テキストカラー (オフホワイト) */
+    --text-secondary-color: #a0a0a5; /* セカンダリテキストカラー (グレー) */
+    --border-color: #38383a; /* 境界線の色 */
+    --shadow-color: rgba(0, 0, 0, 0.2); /* 影の色 */
+    --border-radius: 12px; /* 角丸の半径 */
+    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* レイアウト */
+.main-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 240px;
+    background-color: var(--background-color);
+    padding: 20px;
+    border-right: 1px solid var(--border-color);
+}
+
+.container {
+    flex-grow: 1;
+    padding: 40px;
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+/* ヘッダーとフッター */
+header {
+    background: linear-gradient(90deg, #2c2c2e, #1c1c1e);
+    color: white;
+    padding: 20px 40px;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2.2rem;
+    font-weight: 700;
+}
+
+header p {
+    margin: 5px 0 0;
+    color: var(--text-secondary-color);
+}
+
+footer {
+    background-color: var(--background-color);
+    color: var(--text-secondary-color);
+    padding: 20px;
+    text-align: center;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.9rem;
+}
+
+/* サイドバー */
+.sidebar h3 {
+    margin-top: 0;
+    color: var(--text-color);
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+}
+
+.sidebar ul li a {
+    display: block;
+    padding: 12px 15px;
+    color: var(--text-secondary-color);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.sidebar ul li a:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-color);
+}
+
+/* カード */
+.card {
+    background-color: var(--card-bg-color);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px var(--shadow-color);
+    padding: 30px;
+    margin-bottom: 30px;
+    transition: border-color 0.3s, transform 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(0, 122, 255, 0.5);
+}
+
+/* タイポグラフィ */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    margin-bottom: 0.75em;
+    color: var(--text-color); /* h2,h3の色を統一 */
+}
+
+h2 {
+    font-size: 1.8rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5em;
+}
+
+h3 {
+    font-size: 1.4rem;
+}
+
+p {
+    margin-top: 0;
+    color: var(--text-secondary-color);
+}
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+a:hover {
+    color: #409cff;
+    text-decoration: none;
+}
+
+/* ボタン */
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+    margin-right: 10px;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #3a3a3c;
+    color: var(--text-color);
+    border-color: #545458;
+}
+
+.btn-secondary:hover {
+    background-color: #4a4a4c;
+}
+
+.btn-text {
+    background-color: transparent;
+    color: var(--primary-color);
+}
+
+.btn-text:hover {
+    background-color: rgba(0, 122, 255, 0.1);
+    transform: none;
+    filter: none;
+}
+
+/* フォーム */
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    color: var(--text-secondary-color);
+}
+
+.form-control {
+    width: 100%;
+    padding: 14px;
+    font-size: 1rem;
+    background-color: #3a3a3c;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-sizing: border-box;
+    color: var(--text-color);
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-control::placeholder {
+    color: #6e6e73;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3);
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .main-layout {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .container {
+        padding: 20px;
+    }
+
+    header, footer {
+        padding: 20px;
+    }
+}
