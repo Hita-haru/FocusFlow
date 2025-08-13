@@ -1,15 +1,15 @@
 from flask import Flask
-from flask_splachemy import SQLAchemy
+from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 
-db = SQLAchemy()
+db = SQLAlchemy()
 login_manager = LoginManager()
 
 def create_app():
 	app = Flask(__name__)
 	app.config['SECRET_KEY'] = 'your_secret_key'
-	app.config['SQLACHEMY_DATABASE_URI'] = 'sqlite:///db.splite'
-	app.config['SQLACHEMY_TRACK_MODIFICATIONS'] = False
+	app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+	app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 	db.init_app(app)
 	login_manager.init_app(app)

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}ユーザー登録{% endblock %}
+
+{% block content %}
+	<h2>ユーザー登録</h2>
+	<form method="POST" action="/register">
+		<p><input type="email" name="email" placeholder="メールアドレス" required></p>
+		<p><input type="text" name="username" placeholder="ユーザー名" required></p>
+		<p><input type="password" name="password" placeholder="パスワード" required></p>
+		<p><button type="submit">登録</button></p>
+	</form>
+{% endblock %}
