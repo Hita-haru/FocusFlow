@@ -1,29 +1,37 @@
 <!DOCTYPE html>
 <html lang="ja">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>FocusFlow</title>
-        <link rel="stylesheet" href="style.css">
-    </head>
-    <body>
-        <header>
-            <h1>Focus Flow</h1>
-            <h3>フォーカスフロー</h3>
-            <p>学習支援SNS</p>
-        </header>
-        <div class="main-layout">
-            <nav class="sidebar">
-                <h3>メニュー</h3>
-                <ul>
-                    <li><a href="#">ホーム</a></li>
-                    <li><a href="#">ダッシュボード</a></li>
-                    <li><a href="#">プロフィール</a></li>
-                    <li><a href="#">設定</a></li>
-                </ul>
-            </nav>
-            <main class="container">
-                
-            </main>
-    </body>
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{% block title %}FocusFlow{% endblock %}</title>
+	<style>
+		/* 簡単なスタイリング */
+		body { font-family: sans-serif; margin: 2em; }
+		nav { margin-bottom: 1em; }
+		.flash { background: #cee5f5; padding: 0.5em; border: 1px solid #aacbe2; }
+	</style>
+</head>
+<body>
+	<nav>
+		<h1>FocusFlow</h1>
+		{% if current_user.is_authenticated %}
+			<a href="{{ url_for('main.dashboard') }}">ダッシュボード</a>
+			<a href="{{ url_for('main.logout') }}">ログアウト</a>
+		{% else %}
+			<a href="{{ url_for('main.login') }}">ログイン</a>
+			<a href="{{ url_for('main.register') }}">登録</a>
+		{% endif %}
+	</nav>
+	<hr>
+	{% with messages = get_flashed_messages() %}
+	{% if messages %}
+		<ul class=flash>
+		{% for message in messages %}
+			<li>{{ message }}</li>
+		{% endfor %}
+		</ul>
+	{% endif %}
+	{% endwith %}
+	{% block content %}{% endblock %}
+</body>
 </html>
