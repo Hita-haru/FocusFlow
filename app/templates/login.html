@@ -3,11 +3,22 @@
 {% block title %}ログイン{% endblock %}
 
 {% block content %}
-	<h2>ログイン</h2>
-	<form method="POST" action="/login">
-		<p><input type="email" name="email" placeholder="メールアドレス" required></p>
-		<p><input type="password" name="password" placeholder="パスワード" required></p>
-		<p><input type="checkbox" name="remember"> ログイン状態を維持する</p>
-		<p><button type="submit">ログイン</button></p>
-	</form>
+	<section class="card">
+		<h2>ログイン</h2>
+		<form method="POST" action="/login">
+			<div class="form-group"></div>
+				<label for="email" class="form-label">メールアドレス</label>
+				<input type="email" id="email" name="email" class="form-control" placeholder="name@example.com" required>
+			</div>
+				<label for="password" class="form-label">パスワード</label>
+				<input type="password" name="password" id="password" class="form-control" placeholder="password" required>
+			</div>
+			<div class="form-group">
+				<label for="remember" class="form-label">ログイン状態を保持する</label>
+				<input type="checkbox" id="remember" class="form-control" name="remember">
+			</div>
+			<a href="{{url_for('main.register')}}" class="btn btn-secondary" >新規登録はこちら</a>
+			<button type="submit" class="btn btn-primary">ログイン</button>
+		</form>
+	</section>
 {% endblock %}

@@ -16,7 +16,6 @@
             <nav class="sidebar">
                 <h3>メニュー</h3>
                 <ul>
-                    <li>ホーム</li>
                     {% if current_user.is_authenticated %}
                         <li><a href="{{url_for('main.dashboard')}}">ダッシュボード</a></li>
                         <li><a href="{{url_for('main.logout')}}">ログアウト</a></li>
