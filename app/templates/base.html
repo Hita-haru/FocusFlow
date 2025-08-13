@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>FocusFlow</title>
-        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     </head>
     <body>
         <header>
@@ -16,10 +16,14 @@
             <nav class="sidebar">
                 <h3>メニュー</h3>
                 <ul>
-                    <li><a href="#">ホーム</a></li>
-                    <li><a href="#">ダッシュボード</a></li>
-                    <li><a href="#">プロフィール</a></li>
-                    <li><a href="#">設定</a></li>
+                    <li>ホーム</li>
+                    {% if current_user.is_authenticated %}
+                        <li><a href="{{url_for('main.dashboard')}}">ダッシュボード</a></li>
+                        <li><a href="{{url_for('main.logout')}}">ログアウト</a></li>
+                    {% else %}
+                        <li><a href="{{url_for('main.login')}}">ログイン</a></li>
+                        <li><a href="{{url_for('main.register')}}">新規登録</a></li>
+                    {% endif %}
                 </ul>
             </nav>
             <main class="container">
