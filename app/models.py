@@ -13,6 +13,8 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(100), nullable=False)
     password_hash = db.Column(db.String(128))
     sessions = db.relationship('FocusSession', backref='author', lazy=True)
+    status = db.Column(db.String(50), default='オフライン')
+    current_gauge_level = db.Column(db.Integer, default=0)
 
     followed = db.relationship(
         'User', secondary=followers,

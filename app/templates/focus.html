@@ -35,6 +35,15 @@
             #accumulated-time { font-size: 1rem; }
             #gauge-container { width: 95%; }
         }
+        /* 横画面（ランドスケープ）または高さが小さい場合の調整 */
+        @media (orientation: landscape) and (max-height: 450px), (max-height: 450px) {
+            #task-name { font-size: 1rem; margin-bottom: 0.5rem; }
+            #current-mode { font-size: 1.5rem; margin-bottom: 0.5rem; }
+            #timer-display { font-size: 5rem; }
+            #gauge-container { margin-top: 0.5rem; }
+            #accumulated-time { font-size: 1rem; margin-top: 0.5rem; }
+            .end-button-container { margin-top: 1rem; }
+        }
     </style>
 </head>
 <body>

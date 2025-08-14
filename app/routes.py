@@ -119,4 +119,25 @@ def log_session():
 	db.session.add(new_session)
 	db.session.commit()
 
+	current_user.status = 'オフライン'
+	current_user.current_gauge_level = 0
+	db.session.commit()
+
 	return jsonify({'status': 'success'})
+
+@main.route('/update_user_status', methods=['POST'])
+@login_required
+def update_user_status():
+    data = request.get_json()
+    status = data.get('status')
+    gauge_level = data.get('gauge_level')
+
+    if status is None:
+        return jsonify({'status': 'error', 'message': 'ステータスが指定されていません。'}), 400
+
+    current_user.status = status
+    if gauge_level is not None:
+        current_user.current_gauge_level = int(gauge_level)
+    db.session.commit()
+
+    return jsonify({'status': 'success'})
