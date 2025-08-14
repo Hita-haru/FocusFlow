@@ -19,6 +19,13 @@
             background-color: var(--background-color);
             color: var(--text-color);
             text-align: center;
+            transition: background-color 0.5s;
+        }
+        .focus-container.focus-bg {
+            background-color: #1c1c1e; /* 集中モードの背景色 */
+        }
+        .focus-container.break-bg {
+            background-color: #0d2a1a; /* 休憩モードの背景色 */
         }
         #task-name {
             font-size: 2rem;
@@ -33,10 +40,10 @@
             transition: color 0.5s;
         }
         #current-mode.focus {
-            color: #34aadc; /* 集中モードの色 */
+            color: #34aadc;
         }
         #current-mode.break {
-            color: #34dc7e; /* 休憩モードの色 */
+            color: #34dc7e;
         }
         #timer-display {
             font-size: 12rem;
@@ -55,7 +62,7 @@
     </style>
 </head>
 <body>
-    <div class="focus-container">
+    <div id="focus-container" class="focus-container">
         <h1 id="task-name">{{ task_name }}</h1>
         <p id="current-mode">集中モード</p>
         <div id="timer-display">25:00</div>
@@ -67,105 +74,120 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const FOCUS_TIME = 25 * 60;
-            const BREAK_TIME = 5 * 60;
+            const FOCUS_TIME_SECONDS = 25 * 60;
+            const BREAK_TIME_SECONDS = 5 * 60;
             const taskName = "{{ task_name|escape }}";
 
-            const timerDisplay = document.getElementById('timer-display');
-            const currentModeDisplay = document.getElementById('current-mode');
-            const accumulatedTimeDisplay = document.getElementById('accumulated-time');
-            const endSessionBtn = document.getElementById('end-session-btn');
+            const elements = {
+                container: document.getElementById('focus-container'),
+                timerDisplay: document.getElementById('timer-display'),
+                currentModeDisplay: document.getElementById('current-mode'),
+                accumulatedTimeDisplay: document.getElementById('accumulated-time'),
+                endSessionBtn: document.getElementById('end-session-btn')
+            };
 
-            let timerId;
-            let state = 'FOCUS'; // 'FOCUS' or 'BREAK'
-            let timeLeft = FOCUS_TIME;
-            let accumulatedFocusTime = 0; // 秒単位で蓄積
+            const sound = {
+                notification: new Audio('https://soundeffect-lab.info/sound/button/mp3/decision1.mp3')
+            };
 
-            // モード切り替え時に再生するサウンド
-            const notificationSound = new Audio('https://soundeffect-lab.info/sound/button/mp3/decision1.mp3');
+            let state = {
+                timerId: null,
+                mode: 'FOCUS', // 'FOCUS' or 'BREAK'
+                targetTime: 0, // 終了目標時刻のタイムスタンプ
+                totalAccumulatedFocusTime: 0, // 完了した集中フェーズの合計時間 (ミリ秒)
+                currentPhaseStartTime: 0 // 現在のフェーズの開始時刻
+            };
 
             function endSession() {
-                clearInterval(timerId);
-                const totalMinutes = Math.floor(accumulatedFocusTime / 60);
+                clearInterval(state.timerId);
                 
+                let finalFocusTime = state.totalAccumulatedFocusTime;
+                if (state.mode === 'FOCUS') {
+                    finalFocusTime += (Date.now() - state.currentPhaseStartTime);
+                }
+                const totalMinutes = Math.floor(finalFocusTime / 1000 / 60);
+
                 if (confirm(`${totalMinutes}分の集中を記録して終了しますか？`)) {
                     logSession(totalMinutes);
                 } else {
-                    // キャンセルされたらタイマーを再開
-                    timerId = setInterval(tick, 1000);
+                    state.timerId = setInterval(tick, 1000);
                 }
             }
 
             function logSession(duration) {
                 fetch("{{ url_for('main.log_session') }}", {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        task_name: taskName,
-                        duration_minutes: duration
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ task_name: taskName, duration_minutes: duration })
                 })
-                .then(response => response.json())
+                .then(res => res.json())
                 .then(data => {
                     if (data.status === 'success') {
                         alert('お疲れ様でした！ダッシュボードに戻ります。');
                         window.location.href = "{{ url_for('main.dashboard') }}";
-                    } else {
-                        alert('エラーが発生しました: ' + data.message);
-                    }
+                    } else { alert('エラー: ' + data.message); }
                 })
-                .catch(error => {
-                    console.error('Error:', error);
+                .catch(err => {
+                    console.error('Error:', err);
                     alert('サーバーとの通信中にエラーが発生しました。');
                 });
             }
 
             function updateDisplay() {
-                const minutes = Math.floor(timeLeft / 60);
-                const seconds = timeLeft % 60;
-                timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                const now = Date.now();
+                const timeLeft = Math.round((state.targetTime - now) / 1000);
+                
+                if (timeLeft >= 0) {
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = timeLeft % 60;
+                    elements.timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                }
 
-                const accumulatedMinutes = Math.floor(accumulatedFocusTime / 60);
-                accumulatedTimeDisplay.textContent = `合計集中時間: ${accumulatedMinutes}分`;
+                let currentFocusTime = state.totalAccumulatedFocusTime;
+                if (state.mode === 'FOCUS') {
+                    currentFocusTime += (now - state.currentPhaseStartTime);
+                }
+                const accumulatedMinutes = Math.floor(currentFocusTime / 1000 / 60);
+                elements.accumulatedTimeDisplay.textContent = `合計集中時間: ${accumulatedMinutes}分`;
             }
 
-            function switchState() {
-                notificationSound.play().catch(e => console.log("サウンドの再生に失敗しました"));
-                if (state === 'FOCUS') {
-                    state = 'BREAK';
-                    timeLeft = BREAK_TIME;
-                    currentModeDisplay.textContent = '休憩モード';
-                    currentModeDisplay.classList.remove('focus');
-                    currentModeDisplay.classList.add('break');
-                } else {
-                    state = 'FOCUS';
-                    timeLeft = FOCUS_TIME;
-                    currentModeDisplay.textContent = '集中モード';
-                    currentModeDisplay.classList.remove('break');
-                    currentModeDisplay.classList.add('focus');
+            function startPhase(mode) {
+                if (state.mode === 'FOCUS') {
+                    state.totalAccumulatedFocusTime += (state.targetTime - state.currentPhaseStartTime);
                 }
+
+                state.mode = mode;
+                state.currentPhaseStartTime = Date.now();
+                const duration = (mode === 'FOCUS') ? FOCUS_TIME_SECONDS : BREAK_TIME_SECONDS;
+                state.targetTime = state.currentPhaseStartTime + duration * 1000;
+
+                // UIの更新
+                elements.currentModeDisplay.textContent = (mode === 'FOCUS') ? '集中モード' : '休憩モード';
+                elements.currentModeDisplay.className = (mode === 'FOCUS') ? 'focus' : 'break';
+                elements.container.className = 'focus-container ' + ((mode === 'FOCUS') ? 'focus-bg' : 'break-bg');
+                
+                sound.notification.play().catch(e => console.log("サウンドの再生に失敗"));
             }
 
             function tick() {
-                timeLeft--;
-                if (state === 'FOCUS') {
-                    accumulatedFocusTime++;
+                if (Date.now() >= state.targetTime) {
+                    startPhase(state.mode === 'FOCUS' ? 'BREAK' : 'FOCUS');
                 }
-
-                if (timeLeft < 0) {
-                    switchState();
-                }
-
                 updateDisplay();
             }
 
-            // --- 初期化 ---
-            currentModeDisplay.classList.add('focus');
-            updateDisplay();
-            timerId = setInterval(tick, 1000);
-            endSessionBtn.addEventListener('click', endSession);
+            function init() {
+                state.currentPhaseStartTime = Date.now();
+                state.targetTime = state.currentPhaseStartTime + FOCUS_TIME_SECONDS * 1000;
+                elements.container.classList.add('focus-bg');
+                elements.currentModeDisplay.classList.add('focus');
+                
+                state.timerId = setInterval(tick, 1000);
+                elements.endSessionBtn.addEventListener('click', endSession);
+                tick(); // 初回実行
+            }
+
+            init();
         });
     </script>
 </body>
