@@ -7,23 +7,12 @@
 		<title>{% block title %}FocusFlow{% endblock %}</title>
     </head>
     <body>
-        <header id="main-header">
-            <div class="header-content">
-                <a href="{% if current_user.is_authenticated %}{{ url_for('main.dashboard') }}{% else %}{{ url_for('main.login') }}{% endif %}" class="header-title-link">
-                    <h1>Focus Flow</h1>
-                </a>
-                <button id="menu-toggle" class="menu-toggle-btn">
-                    <span class="menu-toggle-icon"></span>
-                    <span class="menu-toggle-icon"></span>
-                    <span class="menu-toggle-icon"></span>
-                </button>
-            </div>
+        <header>
+            <h1>Focus Flow</h1>
+            <p>学習支援SNS</p>
         </header>
-
-        <div id="sidebar-overlay"></div>
-
         <div class="main-layout">
-            <nav id="main-sidebar" class="sidebar">
+            <nav class="sidebar">
                 <h3>メニュー</h3>
                 <ul>
                     {% if current_user.is_authenticated %}
@@ -50,26 +39,5 @@
 				{% block content %}{% endblock %}
             </main>
         </div>
-
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                const menuToggle = document.getElementById('menu-toggle');
-                const mainSidebar = document.getElementById('main-sidebar');
-                const sidebarOverlay = document.getElementById('sidebar-overlay');
-
-                // メニューの開閉
-                menuToggle.addEventListener('click', () => {
-                    mainSidebar.classList.toggle('sidebar-open');
-                    sidebarOverlay.classList.toggle('overlay-active');
-                    document.body.classList.toggle('no-scroll');
-                });
-
-                sidebarOverlay.addEventListener('click', () => {
-                    mainSidebar.classList.remove('sidebar-open');
-                    sidebarOverlay.classList.remove('overlay-active');
-                    document.body.classList.remove('no-scroll');
-                });
-            });
-        </script>
     </body>
 </html>
