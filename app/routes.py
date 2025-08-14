@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from .models import User, FocusSession
 from . import db
@@ -92,15 +92,15 @@ def unfollow(username):
     flash(f'{user.username}さんのフォローを解除しました。')
     return redirect(url_for('main.user', username=username))
 
-@main.route('/start_session', methods=['POST'])
+@main.route('/log_session', methods=['POST'])
 @login_required
-def start_session():
-	task_name = request.form.get('task_name')
-	duration_minutes = request.form.get('duration_minutes')
+def log_session():
+	data = request.get_json()
+	task_name = data.get('task_name')
+	duration_minutes = data.get('duration_minutes')
 
 	if not task_name or not duration_minutes:
-		flash('タスク名と時間を入力してください。')
-		return redirect(url_for('main.dashboard'))
+		return jsonify({'status': 'error', 'message': 'タスク名と時間が指定されていません。'}), 400
 
 	new_session = FocusSession(
 		task_name=task_name,
@@ -110,4 +110,4 @@ def start_session():
 	db.session.add(new_session)
 	db.session.commit()
 
-	return redirect(url_for('main.dashboard'))
+	return jsonify({'status': 'success'})
