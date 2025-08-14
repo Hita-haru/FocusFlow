@@ -77,40 +77,24 @@ body {
 }
 
 /* サイドバー */
-.sidebar {
-    width: 240px;
+#main-sidebar {
+    position: fixed;
+    top: 0;
+    right: 0; /* 右からスライドイン */
+    width: 250px;
+    height: 100vh;
     background-color: var(--background-color);
     padding: 20px;
-    border-right: 1px solid var(--border-color);
+    border-left: 1px solid var(--border-color);
+    box-shadow: -2px 0 8px rgba(0,0,0,0.5);
+    z-index: 1001; /* ヘッダーより前面に */
+    transform: translateX(100%); /* 初期状態は完全に隠す */
+    transition: transform 0.3s ease-in-out;
+    overflow-y: auto;
 }
 
-.sidebar h3 {
-    margin-top: 0;
-    color: var(--text-color);
-    font-size: 1.1rem;
-    font-weight: 600;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.sidebar ul {
-    list-style: none;
-    padding: 0;
-    margin-top: 20px;
-}
-
-.sidebar ul li a {
-    display: block;
-    padding: 12px 15px;
-    color: var(--text-secondary-color);
-    text-decoration: none;
-    border-radius: 8px;
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.sidebar ul li a:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: var(--text-color);
+#main-sidebar.sidebar-open {
+    transform: translateX(0);
 }
 
 /* オーバーレイ */
@@ -265,10 +249,6 @@ a:hover {
     transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-.form-control::placeholder {
-    color: #6e6e73;
-}
-
 .form-control:focus {
     outline: none;
     border-color: var(--primary-color);
@@ -399,15 +379,15 @@ a:hover {
         padding-top: 0; /* ヘッダーが固定でないため */
     }
     #main-header {
-        padding: 10px 20px; /* モバイルヘッダーのパディング */
+        padding: 10px 20px;
     }
     #main-header h1 {
-        font-size: 1.8rem; /* モバイルヘッダーのフォントサイズ */
+        font-size: 1.8rem;
     }
     .menu-toggle-btn {
-        display: flex; /* モバイルで表示 */
-        position: static; /* 相対位置 */
-        margin-left: auto; /* 右寄せ */
+        display: flex;
+        position: static;
+        margin-left: auto;
     }
     #main-sidebar {
         position: fixed;
@@ -415,7 +395,7 @@ a:hover {
         right: 0;
         width: 250px;
         height: 100vh;
-        transform: translateX(100%); /* 初期状態は隠す */
+        transform: translateX(100%);
         transition: transform 0.3s ease-in-out;
         border-left: 1px solid var(--border-color);
         box-shadow: -2px 0 8px rgba(0,0,0,0.5);
@@ -425,7 +405,7 @@ a:hover {
         flex-direction: column;
     }
     .sidebar {
-        display: none; /* デスクトップのサイドバーを非表示 */
+        display: none;
     }
     .container {
         padding: 20px;
@@ -434,20 +414,17 @@ a:hover {
 
 @media (min-width: 769px) {
     .menu-toggle-btn {
-        display: none; /* デスクトップで非表示 */
+        display: none;
     }
     .sidebar {
-        display: block; /* デスクトップでサイドバーを表示 */
-        position: static; /* 固定解除 */
-        transform: translateX(0); /* 位置リセット */
-        width: 240px; /* デスクトップのサイドバー幅 */
+        display: block;
+        position: static;
+        transform: translateX(0);
+        width: 240px;
         border-right: 1px solid var(--border-color);
         border-bottom: none;
     }
     .main-layout {
         flex-direction: row;
-    }
-    body.no-scroll {
-        overflow: auto;
     }
 }
