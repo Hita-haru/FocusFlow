@@ -18,15 +18,10 @@ body {
     line-height: 1.7;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    padding-top: 60px; /* 固定ヘッダーの高さ分 */
 }
 
 /* ヘッダー */
 #main-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
     background: linear-gradient(90deg, #2c2c2e, #1c1c1e);
     color: white;
     padding: 10px 20px;
@@ -36,11 +31,6 @@ body {
     border-bottom: 1px solid var(--border-color);
     box-shadow: 0 2px 8px var(--shadow-color);
     z-index: 1000;
-    transition: transform 0.3s ease-out;
-}
-
-#main-header.header-hidden {
-    transform: translateY(-100%);
 }
 
 .header-content {

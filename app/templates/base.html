@@ -7,7 +7,7 @@
 		<title>{% block title %}FocusFlow{% endblock %}</title>
     </head>
     <body>
-        <nav id="main-header">
+        <header id="main-header">
             <div class="header-content">
                 <a href="{% if current_user.is_authenticated %}{{ url_for('main.dashboard') }}{% else %}{{ url_for('main.login') }}{% endif %}" class="header-title-link">
                     <h1>Focus Flow</h1>
@@ -18,7 +18,7 @@
                     <span class="menu-toggle-icon"></span>
                 </button>
             </div>
-        </nav>
+        </header>
 
         <div id="sidebar-overlay"></div>
 
@@ -56,7 +56,6 @@
                 const menuToggle = document.getElementById('menu-toggle');
                 const mainSidebar = document.getElementById('main-sidebar');
                 const sidebarOverlay = document.getElementById('sidebar-overlay');
-                const mainHeader = document.getElementById('main-header');
 
                 // メニューの開閉
                 menuToggle.addEventListener('click', () => {
@@ -69,21 +68,6 @@
                     mainSidebar.classList.remove('sidebar-open');
                     sidebarOverlay.classList.remove('overlay-active');
                     document.body.classList.remove('no-scroll');
-                });
-
-                // スクロール追従ヘッダー
-                let lastScrollTop = 0;
-                window.addEventListener('scroll', () => {
-                    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-
-                    if (scrollTop > lastScrollTop) {
-                        // 下にスクロール
-                        mainHeader.classList.add('header-hidden');
-                    } else {
-                        // 上にスクロール
-                        mainHeader.classList.remove('header-hidden');
-                    }
-                    lastScrollTop = scrollTop;
                 });
             });
         </script>
