@@ -20,51 +20,68 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-.main-layout {
+/* ヘッダー */
+#main-header {
+    background: linear-gradient(90deg, #2c2c2e, #1c1c1e);
+    color: white;
+    padding: 10px 20px;
     display: flex;
-    min-height: 100vh;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px var(--shadow-color);
+    z-index: 1000;
 }
 
+.header-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.header-title-link {
+    text-decoration: none;
+    color: inherit;
+    flex-grow: 1;
+    text-align: center;
+}
+
+#main-header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+/* ハンバーガーメニューボタン */
+.menu-toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    display: none; /* デフォルトは非表示（PC用） */
+    flex-direction: column;
+    justify-content: space-around;
+    width: 30px;
+    height: 25px;
+    margin-left: auto; /* 右寄せ */
+    z-index: 1001;
+}
+
+.menu-toggle-icon {
+    display: block;
+    width: 100%;
+    height: 3px;
+    background-color: white;
+    border-radius: 2px;
+    transition: all 0.3s ease-in-out;
+}
+
+/* サイドバー */
 .sidebar {
     width: 240px;
     background-color: var(--background-color);
     padding: 20px;
     border-right: 1px solid var(--border-color);
-}
-
-.container {
-    flex-grow: 1;
-    padding: 40px;
-    max-width: 960px;
-    margin: 0 auto;
-}
-
-header {
-    background: linear-gradient(90deg, #2c2c2e, #1c1c1e);
-    color: white;
-    padding: 20px 40px;
-    text-align: center;
-    border-bottom: 1px solid var(--border-color);
-}
-
-header h1 {
-    margin: 0;
-    font-size: 2.2rem;
-    font-weight: 700;
-}
-
-header p {
-    margin: 5px 0 0;
-    color: var(--text-secondary-color);
-}
-
-footer {
-    background-color: var(--background-color);
-    color: var(--text-secondary-color);
-    padding: 20px;
-    text-align: center;
-    border-top: 1px solid var(--border-color);
-    font-size: 0.9rem;
 }
 
 .sidebar h3 {
@@ -96,6 +113,42 @@ footer {
     color: var(--text-color);
 }
 
+/* オーバーレイ */
+#sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 999;
+    display: none;
+}
+
+#sidebar-overlay.overlay-active {
+    display: block;
+}
+
+/* サイドバーが開いているときにスクロールを禁止 */
+body.no-scroll {
+    overflow: hidden;
+}
+
+/* メインコンテンツのレイアウト */
+.main-layout {
+    display: flex;
+    min-height: calc(100vh - 60px); /* ヘッダーの高さ分を引く */
+    margin-top: 0;
+}
+
+.container {
+    flex-grow: 1;
+    padding: 40px;
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+/* 既存のスタイル */
 .card {
     background-color: var(--card-bg-color);
     border-radius: var(--border-radius);
@@ -222,26 +275,6 @@ a:hover {
     box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3);
 }
 
-@media (max-width: 768px) {
-    .main-layout {
-        flex-direction: column;
-    }
-
-    .sidebar {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .container {
-        padding: 20px;
-    }
-
-    header, footer {
-        padding: 20px;
-    }
-}
-
 .checkbox-container {
   display: block;
   position: relative;
@@ -358,4 +391,63 @@ a:hover {
 .table-responsive {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    body {
+        padding-top: 0; /* ヘッダーが固定でないため */
+    }
+    #main-header {
+        padding: 10px 20px; /* モバイルヘッダーのパディング */
+    }
+    #main-header h1 {
+        font-size: 1.8rem; /* モバイルヘッダーのフォントサイズ */
+    }
+    .menu-toggle-btn {
+        display: flex; /* モバイルで表示 */
+        position: static; /* 相対位置 */
+        margin-left: auto; /* 右寄せ */
+    }
+    #main-sidebar {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 250px;
+        height: 100vh;
+        transform: translateX(100%); /* 初期状態は隠す */
+        transition: transform 0.3s ease-in-out;
+        border-left: 1px solid var(--border-color);
+        box-shadow: -2px 0 8px rgba(0,0,0,0.5);
+        z-index: 1000;
+    }
+    .main-layout {
+        flex-direction: column;
+    }
+    .sidebar {
+        display: none; /* デスクトップのサイドバーを非表示 */
+    }
+    .container {
+        padding: 20px;
+    }
+}
+
+@media (min-width: 769px) {
+    .menu-toggle-btn {
+        display: none; /* デスクトップで非表示 */
+    }
+    .sidebar {
+        display: block; /* デスクトップでサイドバーを表示 */
+        position: static; /* 固定解除 */
+        transform: translateX(0); /* 位置リセット */
+        width: 240px; /* デスクトップのサイドバー幅 */
+        border-right: 1px solid var(--border-color);
+        border-bottom: none;
+    }
+    .main-layout {
+        flex-direction: row;
+    }
+    body.no-scroll {
+        overflow: auto;
+    }
 }
