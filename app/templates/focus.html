@@ -48,7 +48,8 @@
             let state = {
                 timerId: null, mode: 'FOCUS', targetTime: 0,
                 totalAccumulatedFocusTime: 0, currentPhaseStartTime: 0,
-                gaugeLevel: 10, lastHiddenTime: 0, gaugeLevelOnHide: 100
+                gaugeLevel: 10, lastHiddenTime: 0, gaugeLevelOnHide: 100,
+                wakeLock: null
             };
 
             const toggleWakeLock = async (enable) => {
@@ -72,12 +73,15 @@
 
             async function endSession() {
                 clearInterval(state.timerId);
-                await toggleWakeLock(false);
-
+                
                 let finalFocusTime = state.totalAccumulatedFocusTime;
                 if (state.mode === 'FOCUS') { finalFocusTime += (Date.now() - state.currentPhaseStartTime); }
                 const totalMinutes = Math.floor(finalFocusTime / 1000 / 60);
-                if (confirm(`${totalMinutes}分のフォーカスを記録して終了しますか？`)) {
+
+                const confirmEnd = confirm(`${totalMinutes}分のフォーカスを記録して終了しますか？`);
+
+                if (confirmEnd) {
+                    await toggleWakeLock(false);
                     logSession(totalMinutes);
                 } else {
                     state.timerId = setInterval(tick, 1000);

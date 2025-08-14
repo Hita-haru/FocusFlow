@@ -1,13 +1,12 @@
-/* 基本設定: モダンなダークテーマ */
 :root {
-    --primary-color: #007aff; /* プライマリカラー (モダンな青) */
-    --background-color: #1c1c1e; /* 背景色 (ダークグレー) */
-    --card-bg-color: #2c2c2e; /* カードの背景色 (少し明るいグレー) */
-    --text-color: #f2f2f7; /* テキストカラー (オフホワイト) */
-    --text-secondary-color: #a0a0a5; /* セカンダリテキストカラー (グレー) */
-    --border-color: #38383a; /* 境界線の色 */
-    --shadow-color: rgba(0, 0, 0, 0.2); /* 影の色 */
-    --border-radius: 12px; /* 角丸の半径 */
+    --primary-color: #007aff;
+    --background-color: #1c1c1e;
+    --card-bg-color: #2c2c2e;
+    --text-color: #f2f2f7;
+    --text-secondary-color: #a0a0a5;
+    --border-color: #38383a;
+    --shadow-color: rgba(0, 0, 0, 0.2);
+    --border-radius: 12px;
     --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
 }
 
@@ -21,7 +20,6 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* レイアウト */
 .main-layout {
     display: flex;
     min-height: 100vh;
@@ -41,7 +39,6 @@ body {
     margin: 0 auto;
 }
 
-/* ヘッダーとフッター */
 header {
     background: linear-gradient(90deg, #2c2c2e, #1c1c1e);
     color: white;
@@ -70,7 +67,6 @@ footer {
     font-size: 0.9rem;
 }
 
-/* サイドバー */
 .sidebar h3 {
     margin-top: 0;
     color: var(--text-color);
@@ -100,7 +96,6 @@ footer {
     color: var(--text-color);
 }
 
-/* カード */
 .card {
     background-color: var(--card-bg-color);
     border-radius: var(--border-radius);
@@ -116,11 +111,10 @@ footer {
     border-color: rgba(0, 122, 255, 0.5);
 }
 
-/* タイポグラフィ */
 h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
     margin-bottom: 0.75em;
-    color: var(--text-color); /* h2,h3の色を統一 */
+    color: var(--text-color);
 }
 
 h2 {
@@ -149,7 +143,6 @@ a:hover {
     text-decoration: none;
 }
 
-/* ボタン */
 .btn {
     display: inline-block;
     padding: 12px 24px;
@@ -195,7 +188,6 @@ a:hover {
     filter: none;
 }
 
-/* フォーム */
 .form-group {
     margin-bottom: 25px;
 }
@@ -230,7 +222,6 @@ a:hover {
     box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3);
 }
 
-/* レスポンシブ対応 */
 @media (max-width: 768px) {
     .main-layout {
         flex-direction: column;
@@ -251,7 +242,6 @@ a:hover {
     }
 }
 
-/* カスタムチェックボックス */
 .checkbox-container {
   display: block;
   position: relative;
@@ -266,7 +256,6 @@ a:hover {
   color: var(--text-secondary-color);
 }
 
-/* デフォルトのチェックボックスを非表示にする */
 .checkbox-container input {
   position: absolute;
   opacity: 0;
@@ -275,7 +264,6 @@ a:hover {
   width: 0;
 }
 
-/* カスタムチェックボックスの作成 */
 .checkmark {
   position: absolute;
   top: 0;
@@ -288,30 +276,25 @@ a:hover {
   transition: background-color 0.2s, border-color 0.2s;
 }
 
-/* ホバー時に背景色を少し明るくする */
 .checkbox-container:hover input ~ .checkmark {
   background-color: #4a4a4c;
 }
 
-/* チェック時にプライマリカラーを背景色に設定 */
 .checkbox-container input:checked ~ .checkmark {
   background-color: var(--primary-color);
   border-color: var(--primary-color);
 }
 
-/* チェックマーク/インジケーターの作成 (チェックされていないときは非表示) */
 .checkmark:after {
   content: "";
   position: absolute;
   display: none;
 }
 
-/* チェック時にチェックマークを表示 */
 .checkbox-container input:checked ~ .checkmark:after {
   display: block;
 }
 
-/* チェックマーク/インジケーターのスタイル */
 .checkbox-container .checkmark:after {
   left: 8px;
   top: 4px;
@@ -324,7 +307,6 @@ a:hover {
   transform: rotate(45deg);
 }
 
-/* フラッシュメッセージ */
 .flash {
     list-style: none;
     padding: 15px 20px;
@@ -341,7 +323,6 @@ a:hover {
     padding: 0;
 }
 
-/* テーブル */
 .table {
     width: 100%;
     border-collapse: collapse;

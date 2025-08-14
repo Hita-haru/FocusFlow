@@ -1,27 +1,43 @@
-{% extends "base.html" %}
-
-{% block title %}ログイン{% endblock %}
-
-{% block content %}
-	<section class="card">
-		<h2>ログイン</h2>
-		<form method="POST" action="/login">
-			<div class="form-group">
-				<label for="email" class="form-label">メールアドレス</label>
-				<input type="email" id="email" name="email" class="form-control" placeholder="name@example.com" required>
-			</div>
-			<div class="form-group">
-				<label for="password" class="form-label">パスワード</label>
-				<input type="password" name="password" id="password" class="form-control" placeholder="password" required>
-			</div>
-			<div class="form-group">
-				<label for="remember" class="checkbox-container">ログイン状態を保持する
-					<input type="checkbox" id="remember" class="form-control" name="remember">
-					<span class="checkmark"></span>
-				</label>
-			</div>
-			<a href="{{url_for('main.register')}}" class="btn btn-secondary" >新規登録はこちら</a>
-			<button type="submit" class="btn btn-primary">ログイン</button>
-		</form>
-	</section>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログイン</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="main-layout">
+        <nav class="sidebar">
+            <h3>メニュー</h3>
+            <ul>
+                <li><a href="{{url_for('main.login')}}">ログイン</a></li>
+                <li><a href="{{url_for('main.register')}}">新規登録</a></li>
+            </ul>
+        </nav>
+        <main class="container">
+            <section class="card">
+                <h2>ログイン</h2>
+                <form method="POST" action="/login">
+                    <div class="form-group">
+                        <label for="email" class="form-label">メールアドレス</label>
+                        <input type="email" id="email" name="email" class="form-control" placeholder="name@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password" class="form-label">パスワード</label>
+                        <input type="password" name="password" id="password" class="form-control" placeholder="password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="remember" class="checkbox-container">ログイン状態を保持する
+                            <input type="checkbox" id="remember" class="form-control" name="remember">
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+                    <a href="{{url_for('main.register')}}" class="btn btn-secondary" >新規登録はこちら</a>
+                    <button type="submit" class="btn btn-primary">ログイン</button>
+                </form>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
