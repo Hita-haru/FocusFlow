@@ -323,3 +323,53 @@ a:hover {
   -ms-transform: rotate(45deg);
   transform: rotate(45deg);
 }
+
+/* フラッシュメッセージ */
+.flash {
+    list-style: none;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    border-radius: var(--border-radius);
+    background-color: #3a3a3c;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    font-size: 0.95rem;
+}
+
+.flash li {
+    margin: 0;
+    padding: 0;
+}
+
+/* テーブル */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: var(--card-bg-color);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.table th,
+.table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.table th {
+    background-color: #3a3a3c;
+    color: var(--text-color);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}

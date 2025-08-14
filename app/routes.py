@@ -57,8 +57,40 @@ def logout():
 @main.route('/dashboard')
 @login_required
 def dashboard():
-	sessions = FocusSession.query.filter_by(user_id=current_user.id).order_by(FocusSession.timestamp.desc()).all()
-	return render_template('dashboard.html', username=current_user.username, sessions=sessions)
+    my_sessions = FocusSession.query.filter_by(user_id=current_user.id).order_by(FocusSession.timestamp.desc()).all()
+    followed_sessions = current_user.followed_sessions().all()
+    return render_template('dashboard.html', username=current_user.username, my_sessions=my_sessions, followed_sessions=followed_sessions)
+
+@main.route('/user/<username>')
+@login_required
+def user(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    sessions = user.sessions.order_by(FocusSession.timestamp.desc()).all()
+    return render_template('user.html', user=user, sessions=sessions)
+
+@main.route('/follow/<username>')
+@login_required
+def follow(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    if user == current_user:
+        flash('自分自身をフォローすることはできません。')
+        return redirect(url_for('main.user', username=username))
+    current_user.follow(user)
+    db.session.commit()
+    flash(f'{user.username}さんをフォローしました。')
+    return redirect(url_for('main.user', username=username))
+
+@main.route('/unfollow/<username>')
+@login_required
+def unfollow(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    if user == current_user:
+        flash('自分自身をアンフォローすることはできません。')
+        return redirect(url_for('main.user', username=username))
+    current_user.unfollow(user)
+    db.session.commit()
+    flash(f'{user.username}さんのフォローを解除しました。')
+    return redirect(url_for('main.user', username=username))
 
 @main.route('/start_session', methods=['POST'])
 @login_required

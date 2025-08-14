@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.username }}のプロフィール{% endblock %}
+
+{% block content %}
+	<section class="card">
+		<h2>{{ user.username }}</h2>
+		<p>フォロー数: {{ user.followed.count() }} | フォロワー数: {{ user.followers.count() }}</p>
+
+		{% if user.id != current_user.id %}
+			{% if not current_user.is_following(user) %}
+				<a href="{{ url_for('main.follow', username=user.username) }}" class="btn btn-primary">フォローする</a>
+			{% else %}
+				<a href="{{ url_for('main.unfollow', username=user.username) }}" class="btn btn-secondary">フォロー解除</a>
+			{% endif %}
+		{% endif %}
+	</section>
+
+	<section class="card">
+		<h3>{{ user.username }}さんの集中履歴</h3>
+		<table class="table">
+			<thead>
+				<tr>
+					<th>タスク名</th>
+					<th>集中時間（分）</th>
+					<th>日時</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for session in sessions %}
+				<tr>
+					<td>{{ session.task_name }}</td>
+					<td>{{ session.duration_minutes }}</td>
+					<td>{{ session.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+				</tr>
+				{% else %}
+				<tr>
+					<td colspan="3">まだ集中履歴がありません。</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</section>
+{% endblock %}

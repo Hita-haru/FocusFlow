@@ -5,30 +5,72 @@
 {% block content %}
 	<h2>ようこそ, {{ username }} さん!</h2>
 
-	<h3>新しい集中セッションを開始</h3>
-	<form method="POST" action="/start_session">
-		<p><input type="text" name="task_name" placeholder="タスク名" required></p>
-		<p><input type="number" name="duration_minutes" placeholder="集中時間（分）" required></p>
-		<p><button type="submit">開始</button></p>
-	</form>
+	<section class="card">
+		<h3>新しい集中セッションを開始</h3>
+		<form method="POST" action="/start_session">
+			<div class="form-group">
+				<label for="task_name" class="form-label">タスク名</label>
+				<input type="text" id="task_name" name="task_name" class="form-control" placeholder="例: 英文法 問題集" required>
+			</div>
+			<div class="form-group">
+				<label for="duration_minutes" class="form-label">集中時間（分）</label>
+				<input type="number" id="duration_minutes" name="duration_minutes" class="form-control" placeholder="例: 25" required>
+			</div>
+			<button type="submit" class="btn btn-primary">開始</button>
+		</form>
+	</section>
 
-	<h3>集中履歴</h3>
-	<table border="1">
-		<thead>
-			<tr>
-				<th>タスク名</th>
-				<th>集中時間（分）</th>
-				<th>日時</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for session in sessions %}
-			<tr>
-				<td>{{ session.task_name }}</td>
-				<td>{{ session.duration_minutes }}</td>
-				<td>{{ session.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
-			</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+	<section class="card">
+		<h3>自分の集中履歴</h3>
+		<table class="table">
+			<thead>
+				<tr>
+					<th>タスク名</th>
+					<th>集中時間（分）</th>
+					<th>日時</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for session in my_sessions %}
+				<tr>
+					<td>{{ session.task_name }}</td>
+					<td>{{ session.duration_minutes }}</td>
+					<td>{{ session.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+				</tr>
+				{% else %}
+				<tr>
+					<td colspan="3">まだ集中履歴がありません。</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</section>
+
+	<section class="card">
+		<h3>アクティビティフィード（フォロー中のユーザー）</h3>
+		<table class="table">
+			<thead>
+				<tr>
+					<th>ユーザー</th>
+					<th>タスク名</th>
+					<th>集中時間（分）</th>
+					<th>日時</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for session in followed_sessions %}
+				<tr>
+					<td><a href="{{ url_for('main.user', username=session.author.username) }}">{{ session.author.username }}</a></td>
+					<td>{{ session.task_name }}</td>
+					<td>{{ session.duration_minutes }}</td>
+					<td>{{ session.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+				</tr>
+				{% else %}
+				<tr>
+					<td colspan="4">フォローしているユーザーの活動はまだありません。</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</section>
 {% endblock %}

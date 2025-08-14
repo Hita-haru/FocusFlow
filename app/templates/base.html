@@ -27,10 +27,9 @@
             </nav>
             <main class="container">
 				
-				<hr>
 				{% with messages = get_flashed_messages() %}
 				{% if messages %}
-					<ul class=flash>
+					<ul class="flash">
 					{% for message in messages %}
 						<li>{{ message }}</li>
 					{% endfor %}
