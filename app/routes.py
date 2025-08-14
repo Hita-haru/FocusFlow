@@ -71,7 +71,7 @@ def focus():
 @login_required
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
-    sessions = user.sessions.order_by(FocusSession.timestamp.desc()).all()
+    sessions = FocusSession.query.filter_by(user_id=user.id).order_by(FocusSession.timestamp.desc()).all()
     return render_template('user.html', user=user, sessions=sessions)
 
 @main.route('/follow/<username>')
