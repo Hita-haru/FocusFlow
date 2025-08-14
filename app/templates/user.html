@@ -5,6 +5,8 @@
 {% block content %}
 	<section class="card">
 		<h2>{{ user.username }}</h2>
+		<p>ステータス: {{ user.status }}</p>
+		<p>現在のフォーカスゲージ: {{ user.current_gauge_level }}%</p>
 		<p>フォロー数: {{ user.followed.count() }} | フォロワー数: {{ user.followers.count() }}</p>
 
 		{% if user.id != current_user.id %}
