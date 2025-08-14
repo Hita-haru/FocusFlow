@@ -67,7 +67,7 @@
             const taskName = "{{ task_name|escape }}";
 
             const elements = { container: document.getElementById('focus-container'), timerDisplay: document.getElementById('timer-display'), currentModeDisplay: document.getElementById('current-mode'), accumulatedTimeDisplay: document.getElementById('accumulated-time'), endSessionBtn: document.getElementById('end-session-btn'), gaugeBar: document.getElementById('gauge-bar'), gaugePercent: document.getElementById('gauge-percent') };
-            const sound = { notification: new Audio('https://soundeffect-lab.info/sound/button/mp3/decision1.mp3') };
+            const sound = { notification: new Audio("{{ url_for('static', filename='sounds/decision1.mp3') }}") };
 
             let state = {
                 timerId: null, mode: 'FOCUS', targetTime: 0,
