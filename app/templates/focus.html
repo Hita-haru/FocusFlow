@@ -48,10 +48,9 @@
                 timerId: null, mode: 'FOCUS', targetTime: 0,
                 totalAccumulatedFocusTime: 0, currentPhaseStartTime: 0,
                 gaugeLevel: 100, lastHiddenTime: 0, gaugeLevelOnHide: 100,
-                wakeLock: null // Wake Lockオブジェクトを保持
+                wakeLock: null
             };
 
-            // Wake Lockの管理関数
             const toggleWakeLock = async (enable) => {
                 if (enable) {
                     try {
@@ -73,34 +72,66 @@
 
             async function endSession() {
                 clearInterval(state.timerId);
-                await toggleWakeLock(false); // 終了時にWake Lockを解放
+                await toggleWakeLock(false);
 
                 let finalFocusTime = state.totalAccumulatedFocusTime;
                 if (state.mode === 'FOCUS') { finalFocusTime += (Date.now() - state.currentPhaseStartTime); }
                 const totalMinutes = Math.floor(finalFocusTime / 1000 / 60);
-                if (confirm(`${totalMinutes}分のフォーカスを記録して終了しますか？`)) { logSession(totalMinutes); }
-                else { 
+                if (confirm(`${totalMinutes}分のフォーカスを記録して終了しますか？`)) {
+                    logSession(totalMinutes);
+                } else {
                     state.timerId = setInterval(tick, 1000);
-                    await toggleWakeLock(true); // キャンセルされたら再度取得
+                    await toggleWakeLock(true);
                 }
             }
 
-            function logSession(duration) { /* ... 変更なし ... */ }
+            function logSession(duration) {
+                fetch("{{ url_for('main.log_session') }}", {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ task_name: taskName, duration_minutes: duration })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') { window.location.href = "{{ url_for('main.dashboard') }}"; }
+                    else { alert('エラー: ' + data.message); }
+                })
+                .catch(err => { console.error('Error:', err); alert('サーバーとの通信中にエラーが発生しました。'); });
+            }
 
             function handleVisibilityChange() {
                 if (document.hidden) {
                     state.lastHiddenTime = Date.now();
                     state.gaugeLevelOnHide = state.gaugeLevel;
                 } else {
-                    // スリープ判定をなくし、常にペナルティを計算
                     const hiddenDuration = Date.now() - state.lastHiddenTime;
                     const penalty = (hiddenDuration / 1000) * GAUGE_PENALTY_RATE;
                     state.gaugeLevel = Math.max(0, state.gaugeLevelOnHide - penalty);
                 }
             }
 
-            function updateDisplay() { /* ... 変更なし ... */ }
-            function startPhase(mode) { /* ... 変更なし ... */ }
+            function updateDisplay() {
+                const now = Date.now();
+                const timeLeft = Math.round((state.targetTime - now) / 1000);
+                if (timeLeft >= 0) {
+                    elements.timerDisplay.textContent = `${String(Math.floor(timeLeft / 60)).padStart(2, '0')}:${String(timeLeft % 60).padStart(2, '0')}`;
+                }
+                let currentFocusTime = state.totalAccumulatedFocusTime;
+                if (state.mode === 'FOCUS') { currentFocusTime += (now - state.currentPhaseStartTime); }
+                elements.accumulatedTimeDisplay.textContent = `合計フォーカス時間: ${Math.floor(currentFocusTime / 1000 / 60)}分`;
+                elements.gaugeBar.style.width = `${state.gaugeLevel}%`;
+            }
+
+            function startPhase(mode) {
+                if (state.mode === 'FOCUS') { state.totalAccumulatedFocusTime += (state.targetTime - state.currentPhaseStartTime); }
+                state.mode = mode;
+                state.currentPhaseStartTime = Date.now();
+                const duration = (mode === 'FOCUS') ? FOCUS_TIME_SECONDS : BREAK_TIME_SECONDS;
+                state.targetTime = state.currentPhaseStartTime + duration * 1000;
+                elements.currentModeDisplay.textContent = (mode === 'FOCUS') ? 'フォーカスモード' : '休憩モード';
+                elements.currentModeDisplay.className = (mode === 'FOCUS') ? 'focus' : 'break';
+                elements.container.className = 'focus-container ' + ((mode === 'FOCUS') ? 'focus-bg' : 'break-bg');
+                sound.notification.play().catch(e => console.log("サウンドの再生に失敗"));
+            }
 
             function tick() {
                 if (Date.now() >= state.targetTime) { startPhase(state.mode === 'FOCUS' ? 'BREAK' : 'FOCUS'); }
@@ -109,7 +140,7 @@
             }
 
             async function init() {
-                await toggleWakeLock(true); // 開始時にWake Lockを取得
+                await toggleWakeLock(true);
                 state.currentPhaseStartTime = Date.now();
                 state.targetTime = state.currentPhaseStartTime + FOCUS_TIME_SECONDS * 1000;
                 elements.container.classList.add('focus-bg');
