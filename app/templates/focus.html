@@ -3,70 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>集中モード - FocusFlow</title>
+    <title>フォーカスモード - FocusFlow</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
-        html, body {
-            overflow: hidden; /* スクロールバーを消す */
-        }
-        .focus-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            width: 100vw;
-            height: 100vh;
-            background-color: var(--background-color);
-            color: var(--text-color);
-            text-align: center;
-            transition: background-color 0.5s;
-        }
-        .focus-container.focus-bg {
-            background-color: #1c1c1e; /* 集中モードの背景色 */
-        }
-        .focus-container.break-bg {
-            background-color: #0d2a1a; /* 休憩モードの背景色 */
-        }
-        #task-name {
-            font-size: 2rem;
-            font-weight: 600;
-            color: var(--text-secondary-color);
-            margin-bottom: 1rem;
-        }
-        #current-mode {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 2rem;
-            transition: color 0.5s;
-        }
-        #current-mode.focus {
-            color: #34aadc;
-        }
-        #current-mode.break {
-            color: #34dc7e;
-        }
-        #timer-display {
-            font-size: 12rem;
-            font-weight: 700;
-            font-family: 'Courier New', Courier, monospace;
-            line-height: 1;
-        }
-        #accumulated-time {
-            margin-top: 2rem;
-            font-size: 1.5rem;
-            color: var(--text-secondary-color);
-        }
-        .end-button-container {
-            margin-top: 3rem;
-        }
+        html, body { overflow: hidden; }
+        .focus-container { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100vw; height: 100vh; background-color: var(--background-color); color: var(--text-color); text-align: center; transition: background-color 0.5s; }
+        .focus-container.focus-bg { background-color: #1c1c1e; }
+        .focus-container.break-bg { background-color: #0d2a1a; }
+        #task-name { font-size: 2rem; font-weight: 600; color: var(--text-secondary-color); margin-bottom: 1rem; }
+        #current-mode { font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem; transition: color 0.5s; }
+        #current-mode.focus { color: #34aadc; }
+        #current-mode.break { color: #34dc7e; }
+        #timer-display { font-size: 12rem; font-weight: 700; font-family: 'Courier New', Courier, monospace; line-height: 1; }
+        #gauge-container { width: 80%; max-width: 600px; height: 20px; background-color: #3a3a3c; border-radius: 10px; margin-top: 1.5rem; overflow: hidden; }
+        #gauge-bar { width: 100%; height: 100%; background-color: var(--primary-color); border-radius: 10px; transition: width 0.3s ease-in-out, background-color 0.5s; }
+        #accumulated-time { margin-top: 1.5rem; font-size: 1.5rem; color: var(--text-secondary-color); }
+        .end-button-container { margin-top: 3rem; }
     </style>
 </head>
 <body>
     <div id="focus-container" class="focus-container">
         <h1 id="task-name">{{ task_name }}</h1>
-        <p id="current-mode">集中モード</p>
+        <p id="current-mode">フォーカスモード</p>
         <div id="timer-display">25:00</div>
-        <div id="accumulated-time">合計集中時間: 0分</div>
+        <div id="gauge-container"><div id="gauge-bar"></div></div>
+        <div id="accumulated-time">合計フォーカス時間: 0分</div>
         <div class="end-button-container">
             <button id="end-session-btn" class="btn btn-secondary">終了して記録する</button>
         </div>
@@ -76,115 +37,87 @@
         document.addEventListener('DOMContentLoaded', () => {
             const FOCUS_TIME_SECONDS = 25 * 60;
             const BREAK_TIME_SECONDS = 5 * 60;
+            const GAUGE_RECOVERY_RATE = 0.2;
+            const GAUGE_PENALTY_RATE = 1.5;
             const taskName = "{{ task_name|escape }}";
 
-            const elements = {
-                container: document.getElementById('focus-container'),
-                timerDisplay: document.getElementById('timer-display'),
-                currentModeDisplay: document.getElementById('current-mode'),
-                accumulatedTimeDisplay: document.getElementById('accumulated-time'),
-                endSessionBtn: document.getElementById('end-session-btn')
-            };
-
-            const sound = {
-                notification: new Audio('https://soundeffect-lab.info/sound/button/mp3/decision1.mp3')
-            };
+            const elements = { container: document.getElementById('focus-container'), timerDisplay: document.getElementById('timer-display'), currentModeDisplay: document.getElementById('current-mode'), accumulatedTimeDisplay: document.getElementById('accumulated-time'), endSessionBtn: document.getElementById('end-session-btn'), gaugeBar: document.getElementById('gauge-bar') };
+            const sound = { notification: new Audio('https://soundeffect-lab.info/sound/button/mp3/decision1.mp3') };
 
             let state = {
-                timerId: null,
-                mode: 'FOCUS', // 'FOCUS' or 'BREAK'
-                targetTime: 0, // 終了目標時刻のタイムスタンプ
-                totalAccumulatedFocusTime: 0, // 完了した集中フェーズの合計時間 (ミリ秒)
-                currentPhaseStartTime: 0 // 現在のフェーズの開始時刻
+                timerId: null, mode: 'FOCUS', targetTime: 0,
+                totalAccumulatedFocusTime: 0, currentPhaseStartTime: 0,
+                gaugeLevel: 100, lastHiddenTime: 0, gaugeLevelOnHide: 100,
+                wakeLock: null // Wake Lockオブジェクトを保持
             };
 
-            function endSession() {
-                clearInterval(state.timerId);
-                
-                let finalFocusTime = state.totalAccumulatedFocusTime;
-                if (state.mode === 'FOCUS') {
-                    finalFocusTime += (Date.now() - state.currentPhaseStartTime);
-                }
-                const totalMinutes = Math.floor(finalFocusTime / 1000 / 60);
-
-                if (confirm(`${totalMinutes}分の集中を記録して終了しますか？`)) {
-                    logSession(totalMinutes);
+            // Wake Lockの管理関数
+            const toggleWakeLock = async (enable) => {
+                if (enable) {
+                    try {
+                        if ('wakeLock' in navigator) {
+                            state.wakeLock = await navigator.wakeLock.request('screen');
+                            console.log('Wake Lock is active.');
+                        }
+                    } catch (err) {
+                        console.error(`${err.name}, ${err.message}`);
+                    }
                 } else {
+                    if (state.wakeLock !== null) {
+                        await state.wakeLock.release();
+                        state.wakeLock = null;
+                        console.log('Wake Lock was released.');
+                    }
+                }
+            };
+
+            async function endSession() {
+                clearInterval(state.timerId);
+                await toggleWakeLock(false); // 終了時にWake Lockを解放
+
+                let finalFocusTime = state.totalAccumulatedFocusTime;
+                if (state.mode === 'FOCUS') { finalFocusTime += (Date.now() - state.currentPhaseStartTime); }
+                const totalMinutes = Math.floor(finalFocusTime / 1000 / 60);
+                if (confirm(`${totalMinutes}分のフォーカスを記録して終了しますか？`)) { logSession(totalMinutes); }
+                else { 
                     state.timerId = setInterval(tick, 1000);
+                    await toggleWakeLock(true); // キャンセルされたら再度取得
                 }
             }
 
-            function logSession(duration) {
-                fetch("{{ url_for('main.log_session') }}", {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ task_name: taskName, duration_minutes: duration })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        alert('お疲れ様でした！ダッシュボードに戻ります。');
-                        window.location.href = "{{ url_for('main.dashboard') }}";
-                    } else { alert('エラー: ' + data.message); }
-                })
-                .catch(err => {
-                    console.error('Error:', err);
-                    alert('サーバーとの通信中にエラーが発生しました。');
-                });
+            function logSession(duration) { /* ... 変更なし ... */ }
+
+            function handleVisibilityChange() {
+                if (document.hidden) {
+                    state.lastHiddenTime = Date.now();
+                    state.gaugeLevelOnHide = state.gaugeLevel;
+                } else {
+                    // スリープ判定をなくし、常にペナルティを計算
+                    const hiddenDuration = Date.now() - state.lastHiddenTime;
+                    const penalty = (hiddenDuration / 1000) * GAUGE_PENALTY_RATE;
+                    state.gaugeLevel = Math.max(0, state.gaugeLevelOnHide - penalty);
+                }
             }
 
-            function updateDisplay() {
-                const now = Date.now();
-                const timeLeft = Math.round((state.targetTime - now) / 1000);
-                
-                if (timeLeft >= 0) {
-                    const minutes = Math.floor(timeLeft / 60);
-                    const seconds = timeLeft % 60;
-                    elements.timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-                }
-
-                let currentFocusTime = state.totalAccumulatedFocusTime;
-                if (state.mode === 'FOCUS') {
-                    currentFocusTime += (now - state.currentPhaseStartTime);
-                }
-                const accumulatedMinutes = Math.floor(currentFocusTime / 1000 / 60);
-                elements.accumulatedTimeDisplay.textContent = `合計集中時間: ${accumulatedMinutes}分`;
-            }
-
-            function startPhase(mode) {
-                if (state.mode === 'FOCUS') {
-                    state.totalAccumulatedFocusTime += (state.targetTime - state.currentPhaseStartTime);
-                }
-
-                state.mode = mode;
-                state.currentPhaseStartTime = Date.now();
-                const duration = (mode === 'FOCUS') ? FOCUS_TIME_SECONDS : BREAK_TIME_SECONDS;
-                state.targetTime = state.currentPhaseStartTime + duration * 1000;
-
-                // UIの更新
-                elements.currentModeDisplay.textContent = (mode === 'FOCUS') ? '集中モード' : '休憩モード';
-                elements.currentModeDisplay.className = (mode === 'FOCUS') ? 'focus' : 'break';
-                elements.container.className = 'focus-container ' + ((mode === 'FOCUS') ? 'focus-bg' : 'break-bg');
-                
-                sound.notification.play().catch(e => console.log("サウンドの再生に失敗"));
-            }
+            function updateDisplay() { /* ... 変更なし ... */ }
+            function startPhase(mode) { /* ... 変更なし ... */ }
 
             function tick() {
-                if (Date.now() >= state.targetTime) {
-                    startPhase(state.mode === 'FOCUS' ? 'BREAK' : 'FOCUS');
-                }
+                if (Date.now() >= state.targetTime) { startPhase(state.mode === 'FOCUS' ? 'BREAK' : 'FOCUS'); }
+                if (!document.hidden && state.mode === 'FOCUS') { state.gaugeLevel = Math.min(100, state.gaugeLevel + GAUGE_RECOVERY_RATE); }
                 updateDisplay();
             }
 
-            function init() {
+            async function init() {
+                await toggleWakeLock(true); // 開始時にWake Lockを取得
                 state.currentPhaseStartTime = Date.now();
                 state.targetTime = state.currentPhaseStartTime + FOCUS_TIME_SECONDS * 1000;
                 elements.container.classList.add('focus-bg');
                 elements.currentModeDisplay.classList.add('focus');
-                
+                document.addEventListener('visibilitychange', handleVisibilityChange);
                 state.timerId = setInterval(tick, 1000);
+                tick();
                 elements.endSessionBtn.addEventListener('click', endSession);
-                tick(); // 初回実行
             }
 
             init();

@@ -17,12 +17,12 @@
 	</section>
 
 	<section class="card">
-		<h3>{{ user.username }}さんの集中履歴</h3>
+		<h3>{{ user.username }}さんのフォーカス履歴</h3>
 		<table class="table">
 			<thead>
 				<tr>
 					<th>タスク名</th>
-					<th>集中時間（分）</th>
+					<th>フォーカス時間（分）</th>
 					<th>日時</th>
 				</tr>
 			</thead>
@@ -35,7 +35,7 @@
 				</tr>
 				{% else %}
 				<tr>
-					<td colspan="3">まだ集中履歴がありません。</td>
+					<td colspan="3">まだフォーカス履歴がありません。</td>
 				</tr>
 				{% endfor %}
 			</tbody>

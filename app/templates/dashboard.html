@@ -7,25 +7,25 @@
 <h2>ようこそ, {{ username }} さん!</h2>
 
 <section class="card">
-    <h3>新しい集中セッションを開始</h3>
-    <!-- 「集中モード」ページにタスク名を渡すためのフォーム -->
+    <h3>新しいフォーカスセッションを開始</h3>
+    <!-- 「フォーカスモード」ページにタスク名を渡すためのフォーム -->
     <form action="{{ url_for('main.focus') }}" method="GET">
         <div class="form-group">
             <label for="task_name" class="form-label">タスク名</label>
             <input type="text" id="task_name" name="task" class="form-control" placeholder="例: 英文法 問題集" required>
         </div>
-        <button type="submit" class="btn btn-primary">集中を開始する</button>
+        <button type="submit" class="btn btn-primary">フォーカスを開始する</button>
     </form>
 </section>
 
 <!-- 既存の履歴表示セクション -->
 <section class="card">
-    <h3>自分の集中履歴</h3>
+    <h3>自分のフォーカス履歴</h3>
     <table class="table">
         <thead>
             <tr>
                 <th>タスク名</th>
-                <th>集中時間（分）</th>
+                <th>フォーカス時間（分）</th>
                 <th>日時</th>
             </tr>
         </thead>
@@ -38,7 +38,7 @@
             </tr>
             {% else %}
             <tr>
-                <td colspan="3">まだ集中履歴がありません。</td>
+                <td colspan="3">まだフォーカス履歴がありません。</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -52,7 +52,7 @@
             <tr>
                 <th>ユーザー</th>
                 <th>タスク名</th>
-                <th>集中時間（分）</th>
+                <th>フォーカス時間（分）</th>
                 <th>日時</th>
             </tr>
         </thead>

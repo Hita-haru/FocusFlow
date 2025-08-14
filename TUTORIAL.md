@@ -1,11 +1,11 @@
 # FocusFlow開発チュートリアル (Python & Flask版)
 
-このチュートリアルでは、集中力育成SNS「FocusFlow」の基本的な機能をPythonのWebフレームワークであるFlaskを使用して開発する手順を解説します。
+このチュートリアルでは、フォーカス力育成SNS「FocusFlow」の基本的な機能をPythonのWebフレームワークであるFlaskを使用して開発する手順を解説します。
 まずはMVP(Minimum Viable Product)として、以下の機能を実装することを目指します。
 
 *   ユーザー登録・ログイン機能
-*   集中セッションの記録（タスク名、時間）
-*   集中履歴の表示ダッシュボード
+*   フォーカスセッションの記録（タスク名、時間）
+*   フォーカス履歴の表示ダッシュボード
 
 ## 1. 環境構築
 
@@ -107,7 +107,7 @@ def create_app():
 
 ## 3. データベースモデルの定義
 
-`app/models.py` に、ユーザーと集中セッションのデータを保存するためのテーブルを定義します。
+`app/models.py` に、ユーザーとフォーカスセッションのデータを保存するためのテーブルを定義します。
 
 ```python
 from flask_login import UserMixin
@@ -311,19 +311,19 @@ def start_session():
 {% block content %}
     <h2>ようこそ, {{ username }} さん!</h2>
 
-    <h3>新しい集中セッションを開始</h3>
+    <h3>新しいフォーカスセッションを開始</h3>
     <form method="POST" action="/start_session">
         <p><input type="text" name="task_name" placeholder="タスク名" required></p>
-        <p><input type="number" name="duration_minutes" placeholder="集中時間（分）" required></p>
+        <p><input type="number" name="duration_minutes" placeholder="フォーカス時間（分）" required></p>
         <p><button type="submit">開始</button></p>
     </form>
 
-    <h3>集中履歴</h3>
+    <h3>フォーカス履歴</h3>
     <table border="1">
         <thead>
             <tr>
                 <th>タスク名</th>
-                <th>集中時間（分）</th>
+                <th>フォーカス時間（分）</th>
                 <th>日時</th>
             </tr>
         </thead>
@@ -355,9 +355,9 @@ python run.py
 
 このチュートリアルで作成したMVPをベースに、「フォーカスフロー仕様.md」にあるさらに高度な機能を実装していくことができます。
 
-*   **集中ゲージの実装**: JavaScriptを使い、バックエンドと非同期通信（WebSocketやAjax）を行ってリアルタイムにゲージを更新します。
-*   **デスクトップアプリ連携**: Electronなどでデスクトップアプリ化し、`psutil`などのライブラリでアクティブなアプリケーションを検知して集中度を判定します。
-*   **ソーシャル機能**: ユーザー同士で「応援」を送る機能や、バーチャルな「集中ルーム」を作成します。
-*   **AIによる分析**: 蓄積された集中履歴データを分析し、ユーザーにフィードバックを返すAIコーチング機能を実装します。
+*   **フォーカスゲージの実装**: JavaScriptを使い、バックエンドと非同期通信（WebSocketやAjax）を行ってリアルタイムにゲージを更新します。
+*   **デスクトップアプリ連携**: Electronなどでデスクトップアプリ化し、`psutil`などのライブラリでアクティブなアプリケーションを検知してフォーカス度を判定します。
+*   **ソーシャル機能**: ユーザー同士で「応援」を送る機能や、バーチャルな「フォーカスルーム」を作成します。
+*   **AIによる分析**: 蓄積されたフォーカス履歴データを分析し、ユーザーにフィードバックを返すAIコーチング機能を実装します。
 
 このチュートリアルが、あなたの「FocusFlow」開発の第一歩となることを願っています。

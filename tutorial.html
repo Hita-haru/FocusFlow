@@ -1,53 +1,36 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
+<html><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FocusFlow開発チュートリアル (Python & Flask版)</title>
-    <link rel="stylesheet" href="style.css">
+    <title>FocusFlow Tutorial</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 </head>
 <body>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-body">
+                        <h1 class="card-title">FocusFlow開発チュートリアル (Python &amp; Flask版)</h1>
 
-    <div class="main-layout">
-        <aside class="sidebar">
-            <h3>目次</h3>
-            <ul>
-                <li><a href="#intro">はじめに</a></li>
-                <li><a href="#section-1">1. 環境構築</a></li>
-                <li><a href="#section-2">2. プロジェクトのセットアップ</a></li>
-                <li><a href="#section-3">3. データベースモデルの定義</a></li>
-                <li><a href="#section-4">4. ルーティングとビューの作成</a></li>
-                <li><a href="#section-5">5. HTMLテンプレートの作成</a></li>
-                <li><a href="#section-6">6. アプリケーションの実行</a></li>
-                <li><a href="#section-7">7. 今後の展望</a></li>
-            </ul>
-        </aside>
+                        <p>このチュートリアルでは、フォーカス力育成SNS「FocusFlow」の基本的な機能をPythonのWebフレームワークであるFlaskを使用して開発する手順を解説します。まずはMVP(Minimum Viable Product)として、以下の機能を実装することを目指します。</p>
 
-        <main class="container">
-            <header>
-                <h1>FocusFlow開発チュートリアル</h1>
-                <p>Python & Flask を使用したMVP開発手順</p>
-            </header>
+                        <ul>
+                            <li>ユーザー登録・ログイン機能</li>
+                            <li>フォーカスセッションの記録（タスク名、時間）</li>
+                            <li>フォーカス履歴の表示ダッシュボード</li>
+                        </ul>
 
-            <section id="intro" class="card">
-                <h2>はじめに</h2>
-                <p>このチュートリアルでは、集中力育成SNS「FocusFlow」の基本的な機能をPythonのWebフレームワークであるFlaskを使用して開発する手順を解説します。まずはMVP(Minimum Viable Product)として、以下の機能を実装することを目指します。</p>
-                <ul>
-                    <li>ユーザー登録・ログイン機能</li>
-                    <li>集中セッションの記録（タスク名、時間）</li>
-                    <li>集中履歴の表示ダッシュボード</li>
-                </ul>
-            </section>
+                        <h2 class="mt-4">1. 環境構築</h2>
 
-            <section id="section-1" class="card">
-                <h2>1. 環境構築</h2>
-                
-                <h3>Pythonのインストール</h3>
-                <p>お使いのシステムにPython 3がインストールされていることを確認してください。まだの場合は、<a href="https://www.python.org/" target="_blank">公式サイト</a>からダウンロードしてインストールします。</p>
+                        <p>まず、開発に必要な環境を整えます。</p>
 
-                <h3>仮想環境の作成と有効化</h3>
-                <p>プロジェクトごとに環境を分離するため、仮想環境を作成します。</p>
-                <pre><code># プロジェクトディレクトリを作成
+                        <h3>Pythonのインストール</h3>
+                        <p>お使いのシステムにPython 3がインストールされていることを確認してください。まだの場合は、<a href="https://www.python.org/">公式サイト</a>からダウンロードしてインストールします。</p>
+
+                        <h3>仮想環境の作成と有効化</h3>
+                        <p>プロジェクトごとに環境を分離するため、仮想環境を作成します。</p>
+
+                        <pre class="bg-light p-3"><code># プロジェクトディレクトリを作成
 mkdir focus-flow-app
 cd focus-flow-app
 
@@ -57,18 +40,19 @@ python -m venv venv
 # 仮想環境を有効化 (Windows)
 .\venv\Scripts\activate</code></pre>
 
-                <h3>必要なライブラリのインストール</h3>
-                <p>Flaskと、データベースを扱うためのFlask-SQLAlchemy、パスワードをハッシュ化するためのWerkzeugなどをインストールします。</p>
-                <pre><code>pip install Flask Flask-SQLAlchemy Flask-Login Werkzeug</code></pre>
-            </section>
+                        <h3>必要なライブラリのインストール</h3>
+                        <p>Flaskと、データベースを扱うためのFlask-SQLAlchemy、パスワードをハッシュ化するためのWerkzeugなどをインストールします。</p>
 
-            <section id="section-2" class="card">
-                <h2>2. プロジェクトのセットアップ</h2>
-                <p>Flaskアプリケーションの基本的な構造を作成します。</p>
+                        <pre class="bg-light p-3"><code>pip install Flask Flask-SQLAlchemy Flask-Login Werkzeug</code></pre>
 
-                <h3>ディレクトリ構成</h3>
-                <p>以下のようなディレクトリ構成を作成します。</p>
-                <pre><code>focus-flow-app/
+                        <h2 class="mt-4">2. プロジェクトのセットアップ</h2>
+
+                        <p>Flaskアプリケーションの基本的な構造を作成します。</p>
+
+                        <h3>ディレクトリ構成</h3>
+                        <p>以下のようなディレクトリ構成を作成します。</p>
+
+                        <pre class="bg-light p-3"><code>focus-flow-app/
 ├── app/
 │   ├── __init__.py
 │   ├── models.py
@@ -81,18 +65,20 @@ python -m venv venv
 │       └── dashboard.html
 └── run.py</code></pre>
 
-                <h3>`run.py` の作成</h3>
-                <p>アプリケーションを起動するためのファイルです。</p>
-                <pre><code>from app import create_app
+                        <h3>`run.py` の作成</h3>
+                        <p>アプリケーションを起動するためのファイルです。</p>
+
+                        <pre class="bg-light p-3"><code>from app import create_app
 
 app = create_app()
 
 if __name__ == '__main__':
     app.run(debug=True)</code></pre>
 
-                <h3>`app/__init__.py` の作成</h3>
-                <p>Flaskアプリケーションのインスタンスを作成し、各種設定を行います。</p>
-                <pre><code>from flask import Flask
+                        <h3>`app/__init__.py` の作成</h3>
+                        <p>Flaskアプリケーションのインスタンスを作成し、各種設定を行います。</p>
+
+                        <pre class="bg-light p-3"><code>from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 
@@ -101,7 +87,7 @@ login_manager = LoginManager()
 
 def create_app():
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'your_secret_key'
+    app.config['SECRET_KEY'] = 'your_secret_key' # 実際には複雑なキーを設定してください
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -121,12 +107,12 @@ def create_app():
         db.create_all()
 
     return app</code></pre>
-            </section>
-            
-            <section id="section-3" class="card">
-                <h2>3. データベースモデルの定義</h2>
-                <p>`app/models.py` に、ユーザーと集中セッションのデータを保存するためのテーブルを定義します。</p>
-                <pre><code>from flask_login import UserMixin
+
+                        <h2 class="mt-4">3. データベースモデルの定義</h2>
+
+                        <p>`app/models.py` に、ユーザーとフォーカスセッションのデータを保存するためのテーブルを定義します。</p>
+
+                        <pre class="bg-light p-3"><code>from flask_login import UserMixin
 from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -149,12 +135,12 @@ class FocusSession(db.Model):
     duration_minutes = db.Column(db.Integer, nullable=False)
     timestamp = db.Column(db.DateTime, server_default=db.func.now())
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)</code></pre>
-            </section>
 
-            <section id="section-4" class="card">
-                <h2>4. ルーティングとビューの作成</h2>
-                <p>`app/routes.py` に、各URLに対応する処理（ビュー関数）を記述します。</p>
-                <pre><code>from flask import Blueprint, render_template, redirect, url_for, request, flash
+                        <h2 class="mt-4">4. ルーティングとビューの作成</h2>
+
+                        <p>`app/routes.py` に、各URLに対応する処理（ビュー関数）を記述します。</p>
+
+                        <pre class="bg-light p-3"><code>from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from .models import User, FocusSession
 from . import db
@@ -235,13 +221,13 @@ def start_session():
     db.session.commit()
 
     return redirect(url_for('main.dashboard'))</code></pre>
-            </section>
 
-            <section id="section-5" class="card">
-                <h2>5. HTMLテンプレートの作成</h2>
-                <p>ユーザーがブラウザで見る画面を作成します。コードブロック内はFlaskテンプレートの構文を含んだHTMLです。</p>
-                <h3>`app/templates/base.html` (共通レイアウト)</h3>
-                <pre><code>&lt;!DOCTYPE html&gt;
+                        <h2 class="mt-4">5. HTMLテンプレートの作成</h2>
+
+                        <p>ユーザーがブラウザで見る画面を作成します。</p>
+
+                        <h3>`app/templates/base.html` (共通レイアウト)</h3>
+                        <pre class="bg-light p-3"><code>&lt;!DOCTYPE html&gt;
 &lt;html lang="ja"&gt;
 &lt;head&gt;
     &lt;meta charset="UTF-8"&gt;
@@ -277,10 +263,10 @@ def start_session():
     {% endwith %}
     {% block content %}{% endblock %}
 &lt;/body&gt;
-&lt;/html&gt;
-</code></pre>
-                <h3>`app/templates/register.html`</h3>
-                <pre><code>{% extends "base.html" %}
+&lt;/html&gt;</code></pre>
+
+                        <h3>`app/templates/register.html`</h3>
+                        <pre class="bg-light p-3"><code>{% extends "base.html" %}
 
 {% block title %}ユーザー登録{% endblock %}
 
@@ -292,10 +278,10 @@ def start_session():
         &lt;p&gt;&lt;input type="password" name="password" placeholder="パスワード" required&gt;&lt;/p&gt;
         &lt;p&gt;&lt;button type="submit"&gt;登録&lt;/button&gt;&lt;/p&gt;
     &lt;/form&gt;
-{% endblock %}
-</code></pre>
-                <h3>`app/templates/login.html`</h3>
-                <pre><code>{% extends "base.html" %}
+{% endblock %}</code></pre>
+
+                        <h3>`app/templates/login.html`</h3>
+                        <pre class="bg-light p-3"><code>{% extends "base.html" %}
 
 {% block title %}ログイン{% endblock %}
 
@@ -307,29 +293,29 @@ def start_session():
         &lt;p&gt;&lt;input type="checkbox" name="remember"&gt; ログイン状態を維持する&lt;/p&gt;
         &lt;p&gt;&lt;button type="submit"&gt;ログイン&lt;/button&gt;&lt;/p&gt;
     &lt;/form&gt;
-{% endblock %}
-</code></pre>
-                <h3>`app/templates/dashboard.html`</h3>
-                <pre><code>{% extends "base.html" %}
+{% endblock %}</code></pre>
+
+                        <h3>`app/templates/dashboard.html`</h3>
+                        <pre class="bg-light p-3"><code>{% extends "base.html" %}
 
 {% block title %}ダッシュボード{% endblock %}
 
 {% block content %}
     &lt;h2&gt;ようこそ, {{ username }} さん!&lt;/h2&gt;
 
-    &lt;h3&gt;新しい集中セッションを開始&lt;/h3&gt;
+    &lt;h3&gt;新しいフォーカスセッションを開始&lt;/h3&gt;
     &lt;form method="POST" action="/start_session"&gt;
         &lt;p&gt;&lt;input type="text" name="task_name" placeholder="タスク名" required&gt;&lt;/p&gt;
-        &lt;p&gt;&lt;input type="number" name="duration_minutes" placeholder="集中時間（分）" required&gt;&lt;/p&gt;
+        &lt;p&gt;&lt;input type="number" name="duration_minutes" placeholder="フォーカス時間（分）" required&gt;&lt;/p&gt;
         &lt;p&gt;&lt;button type="submit"&gt;開始&lt;/button&gt;&lt;/p&gt;
     &lt;/form&gt;
 
-    &lt;h3&gt;集中履歴&lt;/h3&gt;
+    &lt;h3&gt;フォーカス履歴&lt;/h3&gt;
     &lt;table border="1"&gt;
         &lt;thead&gt;
             &lt;tr&gt;
                 &lt;th&gt;タスク名&lt;/th&gt;
-                &lt;th&gt;集中時間（分）&lt;/th&gt;
+                &lt;th&gt;フォーカス時間（分）&lt;/th&gt;
                 &lt;th&gt;日時&lt;/th&gt;
             &lt;/tr&gt;
         &lt;/thead&gt;
@@ -343,34 +329,32 @@ def start_session():
             {% endfor %}
         &lt;/tbody&gt;
     &lt;/table&gt;
-{% endblock %}
-</code></pre>
-            </section>
+{% endblock %}</code></pre>
 
-            <section id="section-6" class="card">
-                <h2>6. アプリケーションの実行</h2>
-                <p>すべてのファイルを作成したら、ターミナルで以下のコマンドを実行してアプリケーションを起動します。</p>
-                <pre><code># focus-flow-app ディレクトリにいることを確認
+                        <h2 class="mt-4">6. アプリケーションの実行</h2>
+
+                        <p>すべてのファイルを作成したら、ターミナルで以下のコマンドを実行してアプリケーションを起動します。</p>
+
+                        <pre class="bg-light p-3"><code># focus-flow-app ディレクトリにいることを確認
 python run.py</code></pre>
-                <p>ブラウザで <code>http://127.0.0.1:5000</code> にアクセスすると、アプリケーションが表示されます。</p>
-            </section>
 
-            <section id="section-7" class="card">
-                <h2>7. 今後の展望</h2>
-                <p>このチュートリアルで作成したMVPをベースに、「フォーカスフロー仕様.md」にあるさらに高度な機能を実装していくことができます。</p>
-                <ul>
-                    <li><strong>集中ゲージの実装</strong>: JavaScriptを使い、バックエンドと非同期通信（WebSocketやAjax）を行ってリアルタイムにゲージを更新します。</li>
-                    <li><strong>デスクトップアプリ連携</strong>: Electronなどでデスクトップアプリ化し、`psutil`などのライブラリでアクティブなアプリケーションを検知して集中度を判定します。</li>
-                    <li><strong>ソーシャル機能</strong>: ユーザー同士で「応援」を送る機能や、バーチャルな「集中ルーム」を作成します。</li>
-                    <li><strong>AIによる分析</strong>: 蓄積された集中履歴データを分析し、ユーザーにフィードバックを返すAIコーチング機能を実装します。</li>
-                </ul>
-            </section>
+                        <p>ブラウザで <code>http://127.0.0.1:5000</code> にアクセスすると、アプリケーションが表示されます。</p>
 
-            <footer>
-                <p>&copy; 2025 FocusFlow Tutorial. All Rights Reserved.</p>
-            </footer>
-        </main>
+                        <h2 class="mt-4">7. 今後の展望</h2>
+
+                        <p>このチュートリアルで作成したMVPをベースに、「フォーカスフロー仕様.md」にあるさらに高度な機能を実装していくことができます。</p>
+                        <ul>
+                            <li><strong>フォーカスゲージの実装</strong>: JavaScriptを使い、バックエンドと非同期通信（WebSocketやAjax）を行ってリアルタイムにゲージを更新します。</li>
+                            <li><strong>デスクトップアプリ連携</strong>: Electronなどでデスクトップアプリ化し、`psutil`などのライブラリでアクティブなアプリケーションを検知してフォーカス度を判定します。</li>
+                            <li><strong>ソーシャル機能</strong>: ユーザー同士で「応援」を送る機能や、バーチャルな「フォーカスルーム」を作成します。</li>
+                            <li><strong>AIによる分析</strong>: 蓄積されたフォーカス履歴データを分析し、ユーザーにフィードバックを返すAIコーチング機能を実装します。</li>
+                        </ul>
+
+                        <p>このチュートリアルが、あなたの「FocusFlow」開発の第一歩となることを願っています。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-</body>
-</html>
+</body></html>
