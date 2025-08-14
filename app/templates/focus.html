@@ -62,7 +62,8 @@
                 timerId: null, mode: 'FOCUS', targetTime: 0,
                 totalAccumulatedFocusTime: 0, currentPhaseStartTime: 0,
                 gaugeLevel: 10, lastHiddenTime: 0, gaugeLevelOnHide: 100,
-                wakeLock: null
+                wakeLock: null,
+                isSessionActive: false // 新しいフラグ
             };
 
             const toggleWakeLock = async (enable) => {
@@ -94,6 +95,7 @@
                 const confirmEnd = confirm(`${totalMinutes}分のフォーカスを記録して終了しますか？`);
 
                 if (confirmEnd) {
+                    state.isSessionActive = false; // セッション終了をマーク
                     await toggleWakeLock(false);
                     logSession(totalMinutes);
                 } else {
@@ -158,6 +160,7 @@
             }
 
             async function init() {
+                state.isSessionActive = true; // セッション開始をマーク
                 await toggleWakeLock(true);
                 state.currentPhaseStartTime = Date.now();
                 state.targetTime = state.currentPhaseStartTime + FOCUS_TIME_SECONDS * 1000;
@@ -170,6 +173,14 @@
             }
 
             init();
+        });
+
+        // ページを離れる際の確認メッセージ
+        window.addEventListener('beforeunload', (event) => {
+            if (state.isSessionActive) {
+                event.preventDefault();
+                event.returnValue = ''; // Chromeなどでメッセージを表示するために必要
+            }
         });
     </script>
 </body>
