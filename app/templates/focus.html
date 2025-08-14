@@ -75,7 +75,7 @@
                 gaugeLevel: 10, lastHiddenTime: 0, gaugeLevelOnHide: 100,
                 wakeLock: null,
                 isSessionActive: false,
-                statusUpdateIntervalId: null // 新しいプロパティ
+                statusUpdateIntervalId: null
             };
 
             const toggleWakeLock = async (enable) => {
@@ -99,7 +99,7 @@
 
             async function endSession() {
                 clearInterval(state.timerId);
-                clearInterval(state.statusUpdateIntervalId); // インターバルをクリア
+                clearInterval(state.statusUpdateIntervalId);
                 await toggleWakeLock(false);
                 
                 let finalFocusTime = state.totalAccumulatedFocusTime;
@@ -110,11 +110,13 @@
 
                 if (confirmEnd) {
                     state.isSessionActive = false;
-                    await sendUserStatusUpdate('オフライン', 0); // 終了ステータスを送信
+                    await sendUserStatusUpdate('オフライン', 0);
                     logSession(totalMinutes);
                 } else {
                     state.timerId = setInterval(tick, 1000);
-                    state.statusUpdateIntervalId = setInterval(sendUserStatusUpdate, 5000, state.mode === 'FOCUS' ? 'フォーカス中' : '休憩中', Math.round(state.gaugeLevel)); // 再開
+                    state.statusUpdateIntervalId = setInterval(() => {
+                        sendUserStatusUpdate(state.mode === 'FOCUS' ? 'フォーカス中' : '休憩中', Math.round(state.gaugeLevel));
+                    }, 5000);
                     await toggleWakeLock(true);
                 }
             }
@@ -166,30 +168,13 @@
                 elements.currentModeDisplay.className = (mode === 'FOCUS') ? 'focus' : 'break';
                 elements.container.className = 'focus-container ' + ((mode === 'FOCUS') ? 'focus-bg' : 'break-bg');
                 sound.notification.play().catch(e => console.log("サウンドの再生に失敗"));
-                sendUserStatusUpdate(state.mode === 'FOCUS' ? 'フォーカス中' : '休憩中', Math.round(state.gaugeLevel)); // フェーズ変更時にステータス更新
+                sendUserStatusUpdate(state.mode === 'FOCUS' ? 'フォーカス中' : '休憩中', Math.round(state.gaugeLevel));
             }
 
             function tick() {
                 if (Date.now() >= state.targetTime) { startPhase(state.mode === 'FOCUS' ? 'BREAK' : 'FOCUS'); }
                 if (!document.hidden && state.mode === 'FOCUS') { state.gaugeLevel = Math.min(100, state.gaugeLevel + GAUGE_RECOVERY_RATE); }
                 updateDisplay();
-            }
-
-            // ★【新規】ユーザーのステータスとゲージレベルをサーバーに送信する関数
-            async function sendUserStatusUpdate(status, gaugeLevel) {
-                try {
-                    const response = await fetch("{{ url_for('main.update_user_status') }}", {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ status: status, gauge_level: gaugeLevel })
-                    });
-                    const data = await response.json();
-                    if (data.status !== 'success') {
-                        console.error('Failed to update user status:', data.message);
-                    }
-                } catch (error) {
-                    console.error('Error sending user status update:', error);
-                }
             }
 
             async function init() {
@@ -202,10 +187,10 @@
                 document.addEventListener('visibilitychange', handleVisibilityChange);
                 state.timerId = setInterval(tick, 1000);
                 
-                // 初期ステータスを送信
                 await sendUserStatusUpdate('フォーカス中', Math.round(state.gaugeLevel));
-                // 定期的なステータス更新を開始
-                state.statusUpdateIntervalId = setInterval(sendUserStatusUpdate, 5000, state.mode === 'FOCUS' ? 'フォーカス中' : '休憩中', Math.round(state.gaugeLevel));
+                state.statusUpdateIntervalId = setInterval(() => {
+                    sendUserStatusUpdate(state.mode === 'FOCUS' ? 'フォーカス中' : '休憩中', Math.round(state.gaugeLevel));
+                }, 5000);
 
                 tick();
                 elements.endSessionBtn.addEventListener('click', endSession);
