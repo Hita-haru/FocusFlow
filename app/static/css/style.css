@@ -295,7 +295,7 @@ a:hover {
   display: block;
 }
 
-.checkbox-container .checkmark:after {
+.checkmark:after {
   left: 8px;
   top: 4px;
   width: 6px;

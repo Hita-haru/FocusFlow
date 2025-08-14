@@ -8,6 +8,7 @@
 
 <section class="card">
     <h3>新しいフォーカスセッションを開始</h3>
+    <!-- 「フォーカスモード」ページにタスク名を渡すためのフォーム -->
     <form action="{{ url_for('main.focus') }}" method="GET">
         <div class="form-group">
             <label for="task_name" class="form-label">タスク名</label>
@@ -17,6 +18,7 @@
     </form>
 </section>
 
+<!-- 既存の履歴表示セクション -->
 <section class="card">
     <h3>自分のフォーカス履歴</h3>
     <table class="table">

@@ -6,8 +6,21 @@
     <title>フォーカスモード - FocusFlow</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
-        html, body { overflow: hidden; }
-        .focus-container { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100vw; height: 100vh; background-color: var(--background-color); color: var(--text-color); text-align: center; transition: background-color 0.5s; }
+        html, body {
+            overflow: hidden;
+        }
+        .focus-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            text-align: center;
+            transition: background-color 0.5s;
+        }
         .focus-container.focus-bg { background-color: #1c1c1e; }
         .focus-container.break-bg { background-color: #0d2a1a; }
         #task-name { font-size: 2rem; font-weight: 600; color: var(--text-secondary-color); margin-bottom: 1rem; }
