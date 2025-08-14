@@ -74,6 +74,15 @@ def user(username):
     sessions = FocusSession.query.filter_by(user_id=user.id).order_by(FocusSession.timestamp.desc()).all()
     return render_template('user.html', user=user, sessions=sessions)
 
+@main.route('/api/user_status/<username>')
+@login_required
+def api_user_status(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    return jsonify({
+        'status': user.status,
+        'gauge_level': user.current_gauge_level
+    })
+
 @main.route('/follow/<username>')
 @login_required
 def follow(username):

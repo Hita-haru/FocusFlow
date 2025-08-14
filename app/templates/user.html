@@ -5,8 +5,8 @@
 {% block content %}
 	<section class="card">
 		<h2>{{ user.username }}</h2>
-		<p>ステータス: {{ user.status }}</p>
-		<p>現在のフォーカスゲージ: {{ user.current_gauge_level }}%</p>
+		<p>ステータス: <span id="user-status-display">{{ user.status }}</span></p>
+		<p>現在のフォーカスゲージ: <span id="user-gauge-display">{{ user.current_gauge_level }}</span>%</p>
 		<p>フォロー数: {{ user.followed.count() }} | フォロワー数: {{ user.followers.count() }}</p>
 
 		{% if user.id != current_user.id %}
@@ -43,4 +43,34 @@
 			</tbody>
 		</table>
 	</section>
+
+	<script>
+		document.addEventListener('DOMContentLoaded', () => {
+			const userStatusDisplay = document.getElementById('user-status-display');
+			const userGaugeDisplay = document.getElementById('user-gauge-display');
+			const username = "{{ user.username|escape }}"; // 表示しているユーザーのユーザー名
+
+			async function fetchAndUpdateProfileStatus() {
+				try {
+					const response = await fetch(`/api/user_status/${username}`);
+					const data = await response.json();
+
+					if (response.ok) {
+						userStatusDisplay.textContent = data.status;
+						userGaugeDisplay.textContent = data.gauge_level;
+					} else {
+						console.error('Failed to fetch user status:', data.message);
+					}
+				} catch (error) {
+					console.error('Error fetching user status:', error);
+				}
+			}
+
+			// ページ読み込み時に一度更新
+			fetchAndUpdateProfileStatus();
+
+			// 5秒ごとに更新
+			setInterval(fetchAndUpdateProfileStatus, 5000);
+		});
+	</script>
 {% endblock %}
