@@ -187,8 +187,12 @@
                 document.addEventListener('visibilitychange', handleVisibilityChange);
                 state.timerId = setInterval(tick, 1000);
                 
+                console.log('init: Calling sendUserStatusUpdate (initial)');
                 await sendUserStatusUpdate('フォーカス中', Math.round(state.gaugeLevel));
+                console.log('init: sendUserStatusUpdate (initial) returned');
+
                 state.statusUpdateIntervalId = setInterval(() => {
+                    console.log('setInterval: Calling sendUserStatusUpdate');
                     sendUserStatusUpdate(state.mode === 'FOCUS' ? 'フォーカス中' : '休憩中', Math.round(state.gaugeLevel));
                 }, 5000);
 
