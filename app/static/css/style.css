@@ -18,18 +18,124 @@ body {
     line-height: 1.7;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    padding-top: 60px; /* 固定ヘッダーの高さ分 */
 }
 
-.main-layout {
+/* ヘッダー */
+#main-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(90deg, #2c2c2e, #1c1c1e);
+    color: white;
+    padding: 10px 20px;
     display: flex;
-    min-height: 100vh;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px var(--shadow-color);
+    z-index: 1000;
+    transition: transform 0.3s ease-out;
 }
 
-.sidebar {
-    width: 240px;
+#main-header.header-hidden {
+    transform: translateY(-100%);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.header-title-link {
+    text-decoration: none;
+    color: inherit;
+    flex-grow: 1;
+    text-align: center;
+}
+
+#main-header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+/* ハンバーガーメニューボタン */
+.menu-toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 30px;
+    height: 25px;
+    position: absolute; /* ヘッダーの右端に配置 */
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1001; /* サイドバーより手前に */
+}
+
+.menu-toggle-icon {
+    display: block;
+    width: 100%;
+    height: 3px;
+    background-color: white;
+    border-radius: 2px;
+    transition: all 0.3s ease-in-out;
+}
+
+/* サイドバー */
+#main-sidebar {
+    position: fixed;
+    top: 0;
+    right: 0; /* 右からスライドイン */
+    width: 250px;
+    height: 100vh;
     background-color: var(--background-color);
     padding: 20px;
-    border-right: 1px solid var(--border-color);
+    border-left: 1px solid var(--border-color); /* 左側にボーダー */
+    box-shadow: -2px 0 8px rgba(0,0,0,0.5);
+    z-index: 1000; /* ヘッダーと同じか少し下 */
+    transform: translateX(100%); /* 初期状態は完全に隠す */
+    transition: transform 0.3s ease-in-out;
+    overflow-y: auto;
+}
+
+#main-sidebar.sidebar-open {
+    transform: translateX(0);
+}
+
+/* オーバーレイ */
+#sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 999; /* サイドバーより下 */
+    display: none; /* 初期状態は非表示 */
+}
+
+#sidebar-overlay.overlay-active {
+    display: block;
+}
+
+/* サイドバーが開いているときにスクロールを禁止 */
+body.no-scroll {
+    overflow: hidden;
+}
+
+/* メインコンテンツのレイアウト調整 */
+.main-layout {
+    display: flex;
+    min-height: calc(100vh - 60px); /* ヘッダーの高さ分を引く */
+    margin-top: 0; /* bodyのpadding-topで調整するため */
 }
 
 .container {
@@ -39,63 +145,7 @@ body {
     margin: 0 auto;
 }
 
-header {
-    background: linear-gradient(90deg, #2c2c2e, #1c1c1e);
-    color: white;
-    padding: 20px 40px;
-    text-align: center;
-    border-bottom: 1px solid var(--border-color);
-}
-
-header h1 {
-    margin: 0;
-    font-size: 2.2rem;
-    font-weight: 700;
-}
-
-header p {
-    margin: 5px 0 0;
-    color: var(--text-secondary-color);
-}
-
-footer {
-    background-color: var(--background-color);
-    color: var(--text-secondary-color);
-    padding: 20px;
-    text-align: center;
-    border-top: 1px solid var(--border-color);
-    font-size: 0.9rem;
-}
-
-.sidebar h3 {
-    margin-top: 0;
-    color: var(--text-color);
-    font-size: 1.1rem;
-    font-weight: 600;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.sidebar ul {
-    list-style: none;
-    padding: 0;
-    margin-top: 20px;
-}
-
-.sidebar ul li a {
-    display: block;
-    padding: 12px 15px;
-    color: var(--text-secondary-color);
-    text-decoration: none;
-    border-radius: 8px;
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.sidebar ul li a:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: var(--text-color);
-}
-
+/* 既存のスタイルはそのまま */
 .card {
     background-color: var(--card-bg-color);
     border-radius: var(--border-radius);
@@ -222,26 +272,6 @@ a:hover {
     box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3);
 }
 
-@media (max-width: 768px) {
-    .main-layout {
-        flex-direction: column;
-    }
-
-    .sidebar {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .container {
-        padding: 20px;
-    }
-
-    header, footer {
-        padding: 20px;
-    }
-}
-
 .checkbox-container {
   display: block;
   position: relative;
@@ -353,4 +383,60 @@ a:hover {
 
 .table tbody tr:hover {
     background-color: rgba(255, 255, 255, 0.05);
+}
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    body {
+        padding-top: 50px; /* ヘッダーの高さ調整 */
+    }
+    #main-header {
+        padding: 5px 15px;
+    }
+    #main-header h1 {
+        font-size: 1.5rem;
+    }
+    .menu-toggle-btn {
+        display: flex; /* モバイルで表示 */
+    }
+    #main-sidebar {
+        width: 200px;
+    }
+    .main-layout {
+        flex-direction: column;
+    }
+    .sidebar {
+        display: none; /* デスクトップのサイドバーを非表示 */
+    }
+    .container {
+        padding: 15px;
+    }
+    header, footer {
+        padding: 15px;
+    }
+}
+
+@media (min-width: 769px) {
+    .menu-toggle-btn {
+        display: none; /* デスクトップで非表示 */
+    }
+    #main-sidebar {
+        position: static;
+        transform: translateX(0);
+        height: auto;
+        border-left: none;
+        box-shadow: none;
+        width: 240px; /* デスクトップのサイドバー幅 */
+    }
+    .main-layout {
+        flex-direction: row;
+    }
+    body.no-scroll {
+        overflow: auto;
+    }
 }

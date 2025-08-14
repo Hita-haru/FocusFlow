@@ -20,6 +20,21 @@
         #gauge-percent { color: white; font-size: 0.8rem; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); position: absolute; width: 100%; text-align: center; }
         #accumulated-time { margin-top: 1.5rem; font-size: 1.5rem; color: var(--text-secondary-color); }
         .end-button-container { margin-top: 3rem; }
+
+        @media (max-width: 768px) {
+            #task-name { font-size: 1.5rem; }
+            #current-mode { font-size: 2rem; }
+            #timer-display { font-size: 8rem; }
+            #accumulated-time { font-size: 1.2rem; }
+            #gauge-container { width: 90%; }
+        }
+        @media (max-width: 480px) {
+            #task-name { font-size: 1.2rem; }
+            #current-mode { font-size: 1.8rem; }
+            #timer-display { font-size: 6rem; }
+            #accumulated-time { font-size: 1rem; }
+            #gauge-container { width: 95%; }
+        }
     </style>
 </head>
 <body>
@@ -165,7 +180,7 @@
         window.addEventListener('beforeunload', (event) => {
             if (state.isSessionActive) {
                 event.preventDefault();
-                event.returnValue = 'フォーカスセッションが進行中です。ページを離れると記録されません。'; // カスタムメッセージを返す
+                event.returnValue = 'フォーカスセッションが進行中です。ページを離れると記録されません。';
             }
         });
     </script>

@@ -8,7 +8,6 @@
 
 <section class="card">
     <h3>新しいフォーカスセッションを開始</h3>
-    <!-- 「フォーカスモード」ページにタスク名を渡すためのフォーム -->
     <form action="{{ url_for('main.focus') }}" method="GET">
         <div class="form-group">
             <label for="task_name" class="form-label">タスク名</label>
@@ -18,58 +17,61 @@
     </form>
 </section>
 
-<!-- 既存の履歴表示セクション -->
 <section class="card">
     <h3>自分のフォーカス履歴</h3>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>タスク名</th>
-                <th>フォーカス時間（分）</th>
-                <th>日時</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for session in my_sessions %}
-            <tr>
-                <td>{{ session.task_name }}</td>
-                <td>{{ session.duration_minutes }}</td>
-                <td>{{ session.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="3">まだフォーカス履歴がありません。</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>タスク名</th>
+                    <th>フォーカス時間（分）</th>
+                    <th>日時</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for session in my_sessions %}
+                <tr>
+                    <td>{{ session.task_name }}</td>
+                    <td>{{ session.duration_minutes }}</td>
+                    <td>{{ session.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3">まだフォーカス履歴がありません。</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </section>
 
 <section class="card">
     <h3>アクティビティフィード（フォロー中のユーザー）</h3>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ユーザー</th>
-                <th>タスク名</th>
-                <th>フォーカス時間（分）</th>
-                <th>日時</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for session in followed_sessions %}
-            <tr>
-                <td><a href="{{ url_for('main.user', username=session.author.username) }}">{{ session.author.username }}</a></td>
-                <td>{{ session.task_name }}</td>
-                <td>{{ session.duration_minutes }}</td>
-                <td>{{ session.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="4">フォローしているユーザーの活動はまだありません。</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ユーザー</th>
+                    <th>タスク名</th>
+                    <th>フォーカス時間（分）</th>
+                    <th>日時</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for session in followed_sessions %}
+                <tr>
+                    <td><a href="{{ url_for('main.user', username=session.author.username) }}">{{ session.author.username }}</a></td>
+                    <td>{{ session.task_name }}</td>
+                    <td>{{ session.duration_minutes }}</td>
+                    <td>{{ session.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4">フォローしているユーザーの活動はまだありません。</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </section>
 {% endblock %}

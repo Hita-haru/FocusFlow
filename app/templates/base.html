@@ -7,25 +7,35 @@
 		<title>{% block title %}FocusFlow{% endblock %}</title>
     </head>
     <body>
-        <header>
-            <h1>Focus Flow</h1>
-            <h3>フォーカスフロー</h3>
-            <p>学習支援SNS</p>
-        </header>
+        <nav id="main-header">
+            <div class="header-content">
+                <a href="{% if current_user.is_authenticated %}{{ url_for('main.dashboard') }}{% else %}{{ url_for('main.login') }}{% endif %}" class="header-title-link">
+                    <h1>Focus Flow</h1>
+                </a>
+                <button id="menu-toggle" class="menu-toggle-btn">
+                    <span class="menu-toggle-icon"></span>
+                    <span class="menu-toggle-icon"></span>
+                    <span class="menu-toggle-icon"></span>
+                </button>
+            </div>
+        </nav>
+
+        <nav id="main-sidebar" class="sidebar">
+            <h3>メニュー</h3>
+            <ul>
+                {% if current_user.is_authenticated %}
+                    <li><a href="{{url_for('main.dashboard')}}">ダッシュボード</a></li>
+                    <li><a href="{{url_for('main.user', username=current_user.username)}}">自分のプロフィール</a></li>
+                    <li><a href="{{url_for('main.logout')}}">ログアウト</a></li>
+                {% else %}
+                    <li><a href="{{url_for('main.login')}}">ログイン</a></li>
+                    <li><a href="{{url_for('main.register')}}">新規登録</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        <div id="sidebar-overlay"></div>
+
         <div class="main-layout">
-            <nav class="sidebar">
-                <h3>メニュー</h3>
-                <ul>
-                    {% if current_user.is_authenticated %}
-                        <li><a href="{{url_for('main.dashboard')}}">ダッシュボード</a></li>
-                        <li><a href="{{url_for('main.user', username=current_user.username)}}">自分のプロフィール</a></li>
-                        <li><a href="{{url_for('main.logout')}}">ログアウト</a></li>
-                    {% else %}
-                        <li><a href="{{url_for('main.login')}}">ログイン</a></li>
-                        <li><a href="{{url_for('main.register')}}">新規登録</a></li>
-                    {% endif %}
-                </ul>
-            </nav>
             <main class="container">
 				
 				{% with messages = get_flashed_messages() %}
@@ -39,5 +49,43 @@
 				{% endwith %}
 				{% block content %}{% endblock %}
             </main>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const menuToggle = document.getElementById('menu-toggle');
+                const mainSidebar = document.getElementById('main-sidebar');
+                const sidebarOverlay = document.getElementById('sidebar-overlay');
+                const mainHeader = document.getElementById('main-header');
+
+                // メニューの開閉
+                menuToggle.addEventListener('click', () => {
+                    mainSidebar.classList.toggle('sidebar-open');
+                    sidebarOverlay.classList.toggle('overlay-active');
+                    document.body.classList.toggle('no-scroll');
+                });
+
+                sidebarOverlay.addEventListener('click', () => {
+                    mainSidebar.classList.remove('sidebar-open');
+                    sidebarOverlay.classList.remove('overlay-active');
+                    document.body.classList.remove('no-scroll');
+                });
+
+                // スクロール追従ヘッダー
+                let lastScrollTop = 0;
+                window.addEventListener('scroll', () => {
+                    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+                    if (scrollTop > lastScrollTop) {
+                        // 下にスクロール
+                        mainHeader.classList.add('header-hidden');
+                    } else {
+                        // 上にスクロール
+                        mainHeader.classList.remove('header-hidden');
+                    }
+                    lastScrollTop = scrollTop;
+                });
+            });
+        </script>
     </body>
 </html>
