@@ -15,8 +15,9 @@
         #current-mode.focus { color: #34aadc; }
         #current-mode.break { color: #34dc7e; }
         #timer-display { font-size: 12rem; font-weight: 700; font-family: 'Courier New', Courier, monospace; line-height: 1; }
-        #gauge-container { width: 80%; max-width: 600px; height: 20px; background-color: #3a3a3c; border-radius: 10px; margin-top: 1.5rem; overflow: hidden; }
-        #gauge-bar { width: 100%; height: 100%; background-color: var(--primary-color); border-radius: 10px; transition: width 0.3s ease-in-out, background-color 0.5s; }
+        #gauge-container { width: 80%; max-width: 600px; height: 20px; background-color: #3a3a3c; border-radius: 10px; margin-top: 1.5rem; overflow: hidden; position: relative; }
+        #gauge-bar { width: 100%; height: 100%; background-color: var(--primary-color); border-radius: 10px; transition: width 0.3s ease-in-out, background-color 0.5s; display: flex; justify-content: center; align-items: center; }
+        #gauge-percent { color: white; font-size: 0.8rem; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); position: absolute; width: 100%; text-align: center; }
         #accumulated-time { margin-top: 1.5rem; font-size: 1.5rem; color: var(--text-secondary-color); }
         .end-button-container { margin-top: 3rem; }
     </style>
@@ -26,7 +27,7 @@
         <h1 id="task-name">{{ task_name }}</h1>
         <p id="current-mode">フォーカスモード</p>
         <div id="timer-display">25:00</div>
-        <div id="gauge-container"><div id="gauge-bar"></div></div>
+        <div id="gauge-container"><div id="gauge-bar"><span id="gauge-percent"></span></div></div>
         <div id="accumulated-time">合計フォーカス時間: 0分</div>
         <div class="end-button-container">
             <button id="end-session-btn" class="btn btn-secondary">終了して記録する</button>
@@ -41,14 +42,13 @@
             const GAUGE_PENALTY_RATE = 1.5;
             const taskName = "{{ task_name|escape }}";
 
-            const elements = { container: document.getElementById('focus-container'), timerDisplay: document.getElementById('timer-display'), currentModeDisplay: document.getElementById('current-mode'), accumulatedTimeDisplay: document.getElementById('accumulated-time'), endSessionBtn: document.getElementById('end-session-btn'), gaugeBar: document.getElementById('gauge-bar') };
+            const elements = { container: document.getElementById('focus-container'), timerDisplay: document.getElementById('timer-display'), currentModeDisplay: document.getElementById('current-mode'), accumulatedTimeDisplay: document.getElementById('accumulated-time'), endSessionBtn: document.getElementById('end-session-btn'), gaugeBar: document.getElementById('gauge-bar'), gaugePercent: document.getElementById('gauge-percent') };
             const sound = { notification: new Audio('https://soundeffect-lab.info/sound/button/mp3/decision1.mp3') };
 
             let state = {
                 timerId: null, mode: 'FOCUS', targetTime: 0,
                 totalAccumulatedFocusTime: 0, currentPhaseStartTime: 0,
-                gaugeLevel: 100, lastHiddenTime: 0, gaugeLevelOnHide: 100,
-                wakeLock: null
+                gaugeLevel: 10, lastHiddenTime: 0, gaugeLevelOnHide: 100
             };
 
             const toggleWakeLock = async (enable) => {
@@ -119,6 +119,7 @@
                 if (state.mode === 'FOCUS') { currentFocusTime += (now - state.currentPhaseStartTime); }
                 elements.accumulatedTimeDisplay.textContent = `合計フォーカス時間: ${Math.floor(currentFocusTime / 1000 / 60)}分`;
                 elements.gaugeBar.style.width = `${state.gaugeLevel}%`;
+                elements.gaugePercent.textContent = `${Math.round(state.gaugeLevel)}%`;
             }
 
             function startPhase(mode) {
