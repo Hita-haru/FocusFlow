@@ -78,6 +78,25 @@
                 statusUpdateIntervalId: null
             };
 
+            // ★ sendUserStatusUpdate関数をinit()の呼び出しより前に移動
+            async function sendUserStatusUpdate(status, gaugeLevel) {
+                console.log('sendUserStatusUpdate: Sending status', status, 'gauge', gaugeLevel);
+                try {
+                    const response = await fetch("{{ url_for('main.update_user_status') }}", {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: status, gauge_level: gaugeLevel })
+                    });
+                    const data = await response.json();
+                    console.log('sendUserStatusUpdate: Server response', data);
+                    if (data.status !== 'success') {
+                        console.error('Failed to update user status:', data.message);
+                    }
+                } catch (error) {
+                    console.error('Error sending user status update:', error);
+                }
+            }
+
             const toggleWakeLock = async (enable) => {
                 if (enable) {
                     try {
