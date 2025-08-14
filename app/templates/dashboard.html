@@ -3,64 +3,19 @@
 {% block title %}ダッシュボード{% endblock %}
 
 {% block content %}
-<style>
-    /* タイマー専用のスタイル */
-    .timer-container {
-        text-align: center;
-    }
-    #timer-display {
-        font-size: 6rem;
-        font-weight: 700;
-        margin: 20px 0;
-        font-family: 'Courier New', Courier, monospace;
-    }
-    .timer-controls button {
-        margin: 0 10px;
-        min-width: 120px; /* ボタンの幅を統一 */
-    }
-    .input-group {
-        display: flex;
-        gap: 20px;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-    .input-group .form-group {
-        margin-bottom: 0;
-        flex-grow: 1;
-    }
-</style>
 
 <h2>ようこそ, {{ username }} さん!</h2>
 
 <section class="card">
-    <div class="timer-container">
-        <h3>フォーカスタイマー</h3>
-        
-        <!-- タイマー表示 -->
-        <div id="timer-display">25:00</div>
-
-        <!-- タスク名と時間入力 -->
-        <form id="focus-form">
-            <div class="input-group">
-                <div class="form-group">
-                    <label for="task_name" class="form-label">タスク名</label>
-                    <input type="text" id="task_name" name="task_name" class="form-control" placeholder="例: 英文法 問題集" required>
-                </div>
-                <div class="form-group">
-                    <label for="duration_minutes" class="form-label">集中時間（分）</label>
-                    <input type="number" id="duration_minutes" name="duration_minutes" class="form-control" value="25" placeholder="例: 25" required>
-                </div>
-            </div>
-            
-            <!-- 操作ボタン -->
-            <div class="timer-controls">
-                <button type="submit" id="start-btn" class="btn btn-primary">開始</button>
-                <button type="button" id="pause-btn" class="btn btn-secondary" style="display: none;">一時停止</button>
-                <button type="button" id="reset-btn" class="btn btn-text">リセット</button>
-            </div>
-        </form>
-    </div>
+    <h3>新しい集中セッションを開始</h3>
+    <!-- 「集中モード」ページにタスク名を渡すためのフォーム -->
+    <form action="{{ url_for('main.focus') }}" method="GET">
+        <div class="form-group">
+            <label for="task_name" class="form-label">タスク名</label>
+            <input type="text" id="task_name" name="task" class="form-control" placeholder="例: 英文法 問題集" required>
+        </div>
+        <button type="submit" class="btn btn-primary">集中を開始する</button>
+    </form>
 </section>
 
 <!-- 既存の履歴表示セクション -->
@@ -117,119 +72,4 @@
         </tbody>
     </table>
 </section>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('focus-form');
-    const startBtn = document.getElementById('start-btn');
-    const pauseBtn = document.getElementById('pause-btn');
-    const resetBtn = document.getElementById('reset-btn');
-    const timerDisplay = document.getElementById('timer-display');
-    const taskNameInput = document.getElementById('task_name');
-    const durationInput = document.getElementById('duration_minutes');
-
-    let timer;
-    let timeLeft; // 残り時間（秒）
-    let originalDuration; // セッション開始時の時間（分）
-    let isRunning = false;
-
-    // 時間の入力を監視してタイマー表示を更新
-    durationInput.addEventListener('input', () => {
-        if (!isRunning) {
-            const minutes = parseInt(durationInput.value, 10) || 0;
-            timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:00`;
-        }
-    });
-
-    form.addEventListener('submit', function(event) {
-        event.preventDefault();
-        if (isRunning) {
-            // 実行中に再度開始ボタンが押された場合（＝一時停止からの再開）
-            startTimer();
-        } else {
-            // 新規開始
-            originalDuration = parseInt(durationInput.value, 10);
-            if (isNaN(originalDuration) || originalDuration <= 0) {
-                alert('有効な時間を入力してください。');
-                return;
-            }
-            timeLeft = originalDuration * 60;
-            startTimer();
-        }
-    });
-
-    pauseBtn.addEventListener('click', function() {
-        clearInterval(timer);
-        isRunning = false;
-        startBtn.textContent = '再開';
-        startBtn.style.display = 'inline-block';
-        pauseBtn.style.display = 'none';
-    });
-
-    resetBtn.addEventListener('click', function() {
-        clearInterval(timer);
-        isRunning = false;
-        const minutes = parseInt(durationInput.value, 10) || 25;
-        timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:00`;
-        startBtn.textContent = '開始';
-        startBtn.style.display = 'inline-block';
-        pauseBtn.style.display = 'none';
-        taskNameInput.disabled = false;
-        durationInput.disabled = false;
-    });
-
-    function startTimer() {
-        isRunning = true;
-        taskNameInput.disabled = true;
-        durationInput.disabled = true;
-        startBtn.style.display = 'none';
-        pauseBtn.style.display = 'inline-block';
-
-        timer = setInterval(updateTimer, 1000);
-    }
-
-    function updateTimer() {
-        timeLeft--;
-        const minutes = Math.floor(timeLeft / 60);
-        const seconds = timeLeft % 60;
-        timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-
-        if (timeLeft < 0) {
-            clearInterval(timer);
-            logSession();
-        }
-    }
-
-    function logSession() {
-        const taskName = taskNameInput.value;
-        
-        // fetch APIを使用してバックエンドにデータを送信
-        fetch('/log_session', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                task_name: taskName,
-                duration_minutes: originalDuration
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                alert('集中セッションが完了しました！履歴を更新します。');
-                location.reload(); // ページをリロードして履歴を更新
-            } else {
-                alert('エラーが発生しました: ' + data.message);
-                resetTimer(); // エラー時もタイマーをリセット
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('サーバーとの通信中にエラーが発生しました。');
-            resetTimer();
-        });
-    }
-});
-</script>
 {% endblock %}

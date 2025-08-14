@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>集中モード - FocusFlow</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        html, body {
+            overflow: hidden; /* スクロールバーを消す */
+        }
+        .focus-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            text-align: center;
+        }
+        #task-name {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text-secondary-color);
+            margin-bottom: 1rem;
+        }
+        #current-mode {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            transition: color 0.5s;
+        }
+        #current-mode.focus {
+            color: #34aadc; /* 集中モードの色 */
+        }
+        #current-mode.break {
+            color: #34dc7e; /* 休憩モードの色 */
+        }
+        #timer-display {
+            font-size: 12rem;
+            font-weight: 700;
+            font-family: 'Courier New', Courier, monospace;
+            line-height: 1;
+        }
+        #accumulated-time {
+            margin-top: 2rem;
+            font-size: 1.5rem;
+            color: var(--text-secondary-color);
+        }
+        .end-button-container {
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="focus-container">
+        <h1 id="task-name">{{ task_name }}</h1>
+        <p id="current-mode">集中モード</p>
+        <div id="timer-display">25:00</div>
+        <div id="accumulated-time">合計集中時間: 0分</div>
+        <div class="end-button-container">
+            <button id="end-session-btn" class="btn btn-secondary">終了して記録する</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const FOCUS_TIME = 25 * 60;
+            const BREAK_TIME = 5 * 60;
+            const taskName = "{{ task_name|escape }}";
+
+            const timerDisplay = document.getElementById('timer-display');
+            const currentModeDisplay = document.getElementById('current-mode');
+            const accumulatedTimeDisplay = document.getElementById('accumulated-time');
+            const endSessionBtn = document.getElementById('end-session-btn');
+
+            let timerId;
+            let state = 'FOCUS'; // 'FOCUS' or 'BREAK'
+            let timeLeft = FOCUS_TIME;
+            let accumulatedFocusTime = 0; // 秒単位で蓄積
+
+            // モード切り替え時に再生するサウンド
+            const notificationSound = new Audio('https://soundeffect-lab.info/sound/button/mp3/decision1.mp3');
+
+            function endSession() {
+                clearInterval(timerId);
+                const totalMinutes = Math.floor(accumulatedFocusTime / 60);
+                
+                if (confirm(`${totalMinutes}分の集中を記録して終了しますか？`)) {
+                    logSession(totalMinutes);
+                } else {
+                    // キャンセルされたらタイマーを再開
+                    timerId = setInterval(tick, 1000);
+                }
+            }
+
+            function logSession(duration) {
+                fetch("{{ url_for('main.log_session') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        task_name: taskName,
+                        duration_minutes: duration
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert('お疲れ様でした！ダッシュボードに戻ります。');
+                        window.location.href = "{{ url_for('main.dashboard') }}";
+                    } else {
+                        alert('エラーが発生しました: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('サーバーとの通信中にエラーが発生しました。');
+                });
+            }
+
+            function updateDisplay() {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+                const accumulatedMinutes = Math.floor(accumulatedFocusTime / 60);
+                accumulatedTimeDisplay.textContent = `合計集中時間: ${accumulatedMinutes}分`;
+            }
+
+            function switchState() {
+                notificationSound.play().catch(e => console.log("サウンドの再生に失敗しました"));
+                if (state === 'FOCUS') {
+                    state = 'BREAK';
+                    timeLeft = BREAK_TIME;
+                    currentModeDisplay.textContent = '休憩モード';
+                    currentModeDisplay.classList.remove('focus');
+                    currentModeDisplay.classList.add('break');
+                } else {
+                    state = 'FOCUS';
+                    timeLeft = FOCUS_TIME;
+                    currentModeDisplay.textContent = '集中モード';
+                    currentModeDisplay.classList.remove('break');
+                    currentModeDisplay.classList.add('focus');
+                }
+            }
+
+            function tick() {
+                timeLeft--;
+                if (state === 'FOCUS') {
+                    accumulatedFocusTime++;
+                }
+
+                if (timeLeft < 0) {
+                    switchState();
+                }
+
+                updateDisplay();
+            }
+
+            // --- 初期化 ---
+            currentModeDisplay.classList.add('focus');
+            updateDisplay();
+            timerId = setInterval(tick, 1000);
+            endSessionBtn.addEventListener('click', endSession);
+        });
+    </script>
+</body>
+</html>

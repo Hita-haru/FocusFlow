@@ -61,6 +61,12 @@ def dashboard():
     followed_sessions = current_user.followed_sessions().all()
     return render_template('dashboard.html', username=current_user.username, my_sessions=my_sessions, followed_sessions=followed_sessions)
 
+@main.route('/focus')
+@login_required
+def focus():
+    task_name = request.args.get('task', '名称未設定のタスク')
+    return render_template('focus.html', task_name=task_name)
+
 @main.route('/user/<username>')
 @login_required
 def user(username):
@@ -99,8 +105,11 @@ def log_session():
 	task_name = data.get('task_name')
 	duration_minutes = data.get('duration_minutes')
 
-	if not task_name or not duration_minutes:
+	if not task_name or duration_minutes is None:
 		return jsonify({'status': 'error', 'message': 'タスク名と時間が指定されていません。'}), 400
+
+	if int(duration_minutes) <= 0:
+		return jsonify({'status': 'success', 'message': '時間は記録されませんでした。'})
 
 	new_session = FocusSession(
 		task_name=task_name,
