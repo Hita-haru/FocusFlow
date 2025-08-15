@@ -46,6 +46,10 @@ class User(UserMixin, db.Model):
                 followers.c.follower_id == self.id).order_by(
                     FocusSession.timestamp.desc())
 
+    @property
+    def total_focus_time(self):
+        return db.session.query(db.func.sum(FocusSession.duration_minutes)).filter(FocusSession.user_id == self.id).scalar() or 0
+
 
 class FocusSession(db.Model):
     id = db.Column(db.Integer, primary_key=True)

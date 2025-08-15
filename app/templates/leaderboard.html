@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}リーダーボード{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="my-4">リーダーボード</h1>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>順位</th>
+                    <th>ユーザー</th>
+                    <th>合計集中時間</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><a href="{{ url_for('main.user', username=user.username) }}">{{ user.username }}</a></td>
+                    <td>{{ user.total_focus_time }} 分</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3">まだデータがありません。</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

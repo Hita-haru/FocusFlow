@@ -107,6 +107,13 @@ def unfollow(username):
     flash(f'{user.username}さんのフォローを解除しました。')
     return redirect(url_for('main.user', username=username))
 
+@main.route('/leaderboard')
+@login_required
+def leaderboard():
+    users = User.query.all()
+    users.sort(key=lambda x: x.total_focus_time, reverse=True)
+    return render_template('leaderboard.html', users=users)
+
 @main.route('/log_session', methods=['POST'])
 @login_required
 def log_session():
