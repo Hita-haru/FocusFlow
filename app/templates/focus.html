@@ -56,6 +56,9 @@
         <div id="accumulated-time">合計フォーカス時間: 0分</div>
         <div class="end-button-container">
             <button id="end-session-btn" class="btn btn-secondary">終了して記録する</button>
+            <!-- For Debugging Only: Remove in production -->
+            <button id="debug-flow-btn" class="btn btn-secondary" style="background-color: #ff00ff;">Debug: Enter Flow State</button>
+            <!-- End of Debugging Only -->
         </div>
     </div>
 
@@ -246,6 +249,13 @@
 
                 tick();
                 elements.endSessionBtn.addEventListener('click', endSession);
+
+                const debugFlowBtn = document.getElementById('debug-flow-btn');
+                if (debugFlowBtn) {
+                    debugFlowBtn.addEventListener('click', () => {
+                        enterFlowState();
+                    });
+                }
             }
 
             init();

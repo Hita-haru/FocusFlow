@@ -95,9 +95,10 @@
 			// 5秒ごとに更新
 			setInterval(fetchAndUpdateProfileStatus, 5000);
 
-			if ({{ user.id }} === {{ current_user.id }}) {
-				const shareBtn = document.getElementById('share-btn');
-				const qrCodeBtn = document.getElementById('qr-code-btn');
+			const shareBtn = document.getElementById('share-btn');
+			const qrCodeBtn = document.getElementById('qr-code-btn');
+
+			if (shareBtn && qrCodeBtn) {
 				const qrModal = document.getElementById('qr-modal');
 				const closeBtn = document.querySelector('.close-btn');
 				const qrCanvas = document.getElementById('qr-canvas');
