@@ -29,5 +29,13 @@
             </tbody>
         </table>
     </div>
+    {% if user_rank %}
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">自分の順位</h5>
+            <p class="card-text">あなたは現在 {{ user_rank }} 位です。</p>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

@@ -112,7 +112,11 @@ def unfollow(username):
 def leaderboard():
     users = User.query.all()
     users.sort(key=lambda x: x.total_focus_time, reverse=True)
-    return render_template('leaderboard.html', users=users)
+    try:
+        user_rank = users.index(current_user) + 1
+    except ValueError:
+        user_rank = None
+    return render_template('leaderboard.html', users=users, user_rank=user_rank)
 
 @main.route('/log_session', methods=['POST'])
 @login_required
