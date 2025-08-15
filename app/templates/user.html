@@ -3,7 +3,7 @@
 {% block title %}{{ user.username }}のプロフィール{% endblock %}
 
 {% block content %}
-	<section class="card {% if user.status == 'フロー状態' %}flow-state{% endif %}">
+	<section id="profile-card" class="card {% if user.status == 'フロー状態' %}flow-state{% endif %}">
 		<h2>{{ user.username }}</h2>
 		<p>ステータス: <span id="user-status-display">{{ user.status }}</span></p>
 		<p>現在のフォーカスゲージ: <span id="user-gauge-display">{{ user.current_gauge_level }}</span>%</p>
@@ -75,7 +75,7 @@
 						userStatusDisplay.textContent = data.status;
 						userGaugeDisplay.textContent = data.gauge_level;
 
-						const profileCard = document.querySelector('.card');
+						const profileCard = document.getElementById('profile-card');
 						if (data.status === 'フロー状態') {
 							profileCard.classList.add('flow-state');
 						} else {
@@ -94,16 +94,26 @@
 
 			// 5秒ごとに更新
 			setInterval(fetchAndUpdateProfileStatus, 5000);
+		});
+	</script>
 
+	<script>
+		document.addEventListener('DOMContentLoaded', () => {
+			console.log('Share buttons script loaded');
 			const shareBtn = document.getElementById('share-btn');
 			const qrCodeBtn = document.getElementById('qr-code-btn');
 
+			console.log('Share button:', shareBtn);
+			console.log('QR code button:', qrCodeBtn);
+
 			if (shareBtn && qrCodeBtn) {
+				console.log('Share and QR code buttons found');
 				const qrModal = document.getElementById('qr-modal');
 				const closeBtn = document.querySelector('.close-btn');
 				const qrCanvas = document.getElementById('qr-canvas');
 
 				shareBtn.addEventListener('click', () => {
+					console.log('Share button clicked');
 					navigator.clipboard.writeText(window.location.href).then(() => {
 						alert('プロフィールURLをクリップボードにコピーしました。');
 					}, () => {
@@ -112,6 +122,7 @@
 				});
 
 				qrCodeBtn.addEventListener('click', () => {
+					console.log('QR code button clicked');
 					qrModal.style.display = 'block';
 					QRCode.toCanvas(qrCanvas, window.location.href, { width: 256 }, (error) => {
 						if (error) console.error(error);
