@@ -219,6 +219,8 @@
             }
 
             function enterFlowState() {
+                if (state.isFlowState) return; // Already in flow state, do not re-notify
+
                 state.isFlowState = true;
                 elements.container.classList.add('flow-state-bg');
                 elements.currentModeDisplay.textContent = 'フロー状態';
