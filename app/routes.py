@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
-from .models import User, FocusSession
+from .models import User, FocusSession, FlowStateLog
 from . import db
 
 main = Blueprint('main', __name__)
@@ -160,4 +160,12 @@ def update_user_status():
         current_user.current_gauge_level = int(gauge_level)
     db.session.commit()
 
+    return jsonify({'status': 'success'})
+
+@main.route('/flow_state_achieved', methods=['POST'])
+@login_required
+def flow_state_achieved():
+    log = FlowStateLog(user_id=current_user.id)
+    db.session.add(log)
+    db.session.commit()
     return jsonify({'status': 'success'})

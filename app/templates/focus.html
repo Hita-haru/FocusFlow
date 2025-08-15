@@ -10,6 +10,7 @@
         .focus-container { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100vw; height: 100vh; background-color: var(--background-color); color: var(--text-color); text-align: center; transition: background-color 0.5s; }
         .focus-container.focus-bg { background-color: #1c1c1e; }
         .focus-container.break-bg { background-color: #0d2a1a; }
+        .focus-container.flow-state-bg { background: linear-gradient(45deg, #ff00ff, #00ffff); }
         #task-name { font-size: 2rem; font-weight: 600; color: var(--text-secondary-color); margin-bottom: 1rem; }
         #current-mode { font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem; transition: color 0.5s; }
         #current-mode.focus { color: #34aadc; }
@@ -64,6 +65,8 @@
             const BREAK_TIME_SECONDS = 5 * 60;
             const GAUGE_RECOVERY_RATE = 0.2;
             const GAUGE_PENALTY_RATE = 1.5;
+            const FLOW_STATE_THRESHOLD = 80; // 80%
+            const FLOW_STATE_DURATION = 5 * 60 * 1000; // 5 minutes
             const taskName = "{{ task_name|escape }}";
 
             const elements = { container: document.getElementById('focus-container'), timerDisplay: document.getElementById('timer-display'), currentModeDisplay: document.getElementById('current-mode'), accumulatedTimeDisplay: document.getElementById('accumulated-time'), endSessionBtn: document.getElementById('end-session-btn'), gaugeBar: document.getElementById('gauge-bar'), gaugePercent: document.getElementById('gauge-percent') };
@@ -75,7 +78,9 @@
                 gaugeLevel: 10, lastHiddenTime: 0, gaugeLevelOnHide: 100,
                 wakeLock: null,
                 isSessionActive: false,
-                statusUpdateIntervalId: null
+                statusUpdateIntervalId: null,
+                isFlowState: false,
+                flowStateStartTime: null
             };
 
             // ★ sendUserStatusUpdate関数をinit()の呼び出しより前に移動
@@ -193,7 +198,30 @@
             function tick() {
                 if (Date.now() >= state.targetTime) { startPhase(state.mode === 'FOCUS' ? 'BREAK' : 'FOCUS'); }
                 if (!document.hidden && state.mode === 'FOCUS') { state.gaugeLevel = Math.min(100, state.gaugeLevel + GAUGE_RECOVERY_RATE); }
+
+                // Flow state detection
+                if (state.mode === 'FOCUS' && !state.isFlowState) {
+                    if (state.gaugeLevel >= FLOW_STATE_THRESHOLD) {
+                        if (state.flowStateStartTime === null) {
+                            state.flowStateStartTime = Date.now();
+                        } else if (Date.now() - state.flowStateStartTime >= FLOW_STATE_DURATION) {
+                            enterFlowState();
+                        }
+                    } else {
+                        state.flowStateStartTime = null;
+                    }
+                }
+
                 updateDisplay();
+            }
+
+            function enterFlowState() {
+                state.isFlowState = true;
+                elements.container.classList.add('flow-state-bg');
+                // You can add more visual effects here
+
+                // Notify the server
+                fetch("{{ url_for('main.flow_state_achieved') }}", { method: 'POST' });
             }
 
             async function init() {
