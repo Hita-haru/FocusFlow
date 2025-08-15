@@ -7,10 +7,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
         html, body { overflow: hidden; }
-        .focus-container { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100vw; height: 100vh; background-color: var(--background-color); color: var(--text-color); text-align: center; transition: background-color 0.5s; }
+        .focus-container { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100vw; height: 100vh; background-color: var(--background-color); color: var(--text-color); text-align: center; transition: background-color 0.5s; box-sizing: border-box; }
         .focus-container.focus-bg { background-color: #1c1c1e; }
         .focus-container.break-bg { background-color: #0d2a1a; }
-        .focus-container.flow-state-bg { background: linear-gradient(45deg, #ff00ff, #00ffff); }
+        .focus-container.flow-state-bg { border: 5px solid #ff00ff; box-shadow: 0 0 20px #ff00ff; }
         #task-name { font-size: 2rem; font-weight: 600; color: var(--text-secondary-color); margin-bottom: 1rem; }
         #current-mode { font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem; transition: color 0.5s; }
         #current-mode.focus { color: #34aadc; }

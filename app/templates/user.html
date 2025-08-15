@@ -16,6 +16,12 @@
 				<a href="{{ url_for('main.unfollow', username=user.username) }}" class="btn btn-secondary">フォロー解除</a>
 			{% endif %}
 		{% endif %}
+		{% if user.id == current_user.id %}
+		<div class="share-buttons" style="margin-top: 20px;">
+			<button id="share-btn" class="btn btn-secondary">プロフィールを共有</button>
+			<button id="qr-code-btn" class="btn btn-secondary">QRコードを表示</button>
+		</div>
+		{% endif %}
 	</section>
 
 	<section class="card">
@@ -44,6 +50,16 @@
 		</table>
 	</section>
 
+<!-- QR Code Modal -->
+<div id="qr-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h3>あなたのプロフィールQRコード</h3>
+        <canvas id="qr-canvas"></canvas>
+    </div>
+</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 	<script>
 		document.addEventListener('DOMContentLoaded', () => {
 			const userStatusDisplay = document.getElementById('user-status-display');
@@ -58,6 +74,13 @@
 					if (response.ok) {
 						userStatusDisplay.textContent = data.status;
 						userGaugeDisplay.textContent = data.gauge_level;
+
+						const profileCard = document.querySelector('.card');
+						if (data.status === 'フロー状態') {
+							profileCard.classList.add('flow-state');
+						} else {
+							profileCard.classList.remove('flow-state');
+						}
 					} else {
 						console.error('Failed to fetch user status:', data.message);
 					}
@@ -71,6 +94,39 @@
 
 			// 5秒ごとに更新
 			setInterval(fetchAndUpdateProfileStatus, 5000);
+
+			if ({{ user.id }} === {{ current_user.id }}) {
+				const shareBtn = document.getElementById('share-btn');
+				const qrCodeBtn = document.getElementById('qr-code-btn');
+				const qrModal = document.getElementById('qr-modal');
+				const closeBtn = document.querySelector('.close-btn');
+				const qrCanvas = document.getElementById('qr-canvas');
+
+				shareBtn.addEventListener('click', () => {
+					navigator.clipboard.writeText(window.location.href).then(() => {
+						alert('プロフィールURLをクリップボードにコピーしました。');
+					}, () => {
+						alert('URLのコピーに失敗しました。');
+					});
+				});
+
+				qrCodeBtn.addEventListener('click', () => {
+					qrModal.style.display = 'block';
+					QRCode.toCanvas(qrCanvas, window.location.href, { width: 256 }, (error) => {
+						if (error) console.error(error);
+					});
+				});
+
+				closeBtn.addEventListener('click', () => {
+					qrModal.style.display = 'none';
+				});
+
+				window.addEventListener('click', (event) => {
+					if (event.target === qrModal) {
+						qrModal.style.display = 'none';
+					}
+				});
+			}
 		});
 	</script>
 {% endblock %}
