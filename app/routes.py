@@ -58,8 +58,9 @@ def logout():
 @login_required
 def dashboard():
     my_sessions = FocusSession.query.filter_by(user_id=current_user.id).order_by(FocusSession.timestamp.desc()).all()
-    followed_sessions = current_user.followed_sessions().all()
-    return render_template('dashboard.html', username=current_user.username, my_sessions=my_sessions, followed_sessions=followed_sessions)
+    followed_users_ids = [user.id for user in current_user.followed]
+    followed_flow_logs = FlowStateLog.query.filter(FlowStateLog.user_id.in_(followed_users_ids)).order_by(FlowStateLog.timestamp.desc()).all()
+    return render_template('dashboard.html', username=current_user.username, my_sessions=my_sessions, followed_flow_logs=followed_flow_logs)
 
 @main.route('/focus')
 @login_required

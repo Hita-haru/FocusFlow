@@ -52,22 +52,20 @@
             <thead>
                 <tr>
                     <th>ユーザー</th>
-                    <th>タスク名</th>
-                    <th>フォーカス時間（分）</th>
+                    <th>アクティビティ</th>
                     <th>日時</th>
                 </tr>
             </thead>
             <tbody>
-                {% for session in followed_sessions %}
+                {% for log in followed_flow_logs %}
                 <tr>
-                    <td><a href="{{ url_for('main.user', username=session.author.username) }}">{{ session.author.username }}</a></td>
-                    <td>{{ session.task_name }}</td>
-                    <td>{{ session.duration_minutes }}</td>
-                    <td>{{ session.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td><a href="{{ url_for('main.user', username=log.user.username) }}">{{ log.user.username }}</a></td>
+                    <td>フロー状態に入りました</td>
+                    <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="4">フォローしているユーザーの活動はまだありません。</td>
+                    <td colspan="3">フォローしているユーザーの活動はまだありません。</td>
                 </tr>
                 {% endfor %}
             </tbody>
