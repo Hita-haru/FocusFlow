@@ -3,7 +3,7 @@
 {% block title %}{{ user.username }}のプロフィール{% endblock %}
 
 {% block content %}
-	<section class="card">
+	<section class="card {% if user.status == 'フロー状態' %}flow-state{% endif %}">
 		<h2>{{ user.username }}</h2>
 		<p>ステータス: <span id="user-status-display">{{ user.status }}</span></p>
 		<p>現在のフォーカスゲージ: <span id="user-gauge-display">{{ user.current_gauge_level }}</span>%</p>

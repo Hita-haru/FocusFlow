@@ -218,7 +218,8 @@
             function enterFlowState() {
                 state.isFlowState = true;
                 elements.container.classList.add('flow-state-bg');
-                // You can add more visual effects here
+                elements.currentModeDisplay.textContent = 'フロー状態';
+                sendUserStatusUpdate('フロー状態', Math.round(state.gaugeLevel));
 
                 // Notify the server
                 fetch("{{ url_for('main.flow_state_achieved') }}", { method: 'POST' });
