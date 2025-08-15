@@ -257,6 +257,7 @@
                 const debugFlowBtn = document.getElementById('debug-flow-btn');
                 if (debugFlowBtn) {
                     debugFlowBtn.addEventListener('click', () => {
+                        state.gaugeLevel = 100; // Set gauge to 100 for debug
                         enterFlowState();
                     });
                 }

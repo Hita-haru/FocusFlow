@@ -66,7 +66,7 @@ def dashboard():
 @login_required
 def focus():
     task_name = request.args.get('task', '名称未設定のタスク')
-    return render_template('focus.html', task_name=task_name)
+    return render_template('focus.html', task_name=task_name, current_username=current_user.username)
 
 @main.route('/user/<username>')
 @login_required
