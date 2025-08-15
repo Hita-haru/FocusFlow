@@ -251,10 +251,10 @@
             init();
         });
 
-        window.addEventListener('beforeunload', (event) => {
+        window.addEventListener('unload', () => {
             if (state.isSessionActive) {
-                event.preventDefault();
-                event.returnValue = 'フォーカスセッションが進行中です。ページを離れると記録されません。';
+                const data = JSON.stringify({ status: 'オフライン', gauge_level: 0 });
+                navigator.sendBeacon("{{ url_for('main.update_user_status') }}", data);
             }
         });
     </script>
