@@ -3,7 +3,7 @@
 {% block title %}{{ user.username }}のプロフィール{% endblock %}
 
 {% block content %}
-	<section id="profile-card" class="card {% if user.status == 'フロー状態' %}flow-state{% endif %}">
+	<section id="profile-card" class="card">
 		<h2>{{ user.username }}</h2>
 		<p>ステータス: <span id="user-status-display">{{ user.status }}</span></p>
 		<p>現在のフォーカスゲージ: <span id="user-gauge-display">{{ user.current_gauge_level }}</span>%</p>
@@ -53,9 +53,19 @@
 <!-- QR Code Modal -->
 <div id="qr-modal" class="modal" style="display: none;">
     <div class="modal-content">
-        <span class="close-btn">&times;</span>
+        <span class="close-btn qr-close-btn">&times;</span>
         <h3>あなたのプロフィールQRコード</h3>
         <canvas id="qr-canvas"></canvas>
+    </div>
+</div>
+
+<!-- Share URL Modal -->
+<div id="share-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close-btn share-close-btn">&times;</span>
+        <h3>プロフィールURL</h3>
+        <p>以下のURLをコピーして共有してください。</p>
+        <input type="text" id="share-url-input" value="" readonly style="width: 100%; padding: 10px; margin-top: 10px; box-sizing: border-box;">
     </div>
 </div>
 
@@ -109,16 +119,16 @@
 			if (shareBtn && qrCodeBtn) {
 				console.log('Share and QR code buttons found');
 				const qrModal = document.getElementById('qr-modal');
-				const closeBtn = document.querySelector('.close-btn');
+				const shareModal = document.getElementById('share-modal');
+				const qrCloseBtn = document.querySelector('.qr-close-btn');
+				const shareCloseBtn = document.querySelector('.share-close-btn');
 				const qrCanvas = document.getElementById('qr-canvas');
+				const shareUrlInput = document.getElementById('share-url-input');
 
 				shareBtn.addEventListener('click', () => {
 					console.log('Share button clicked');
-					navigator.clipboard.writeText(window.location.href).then(() => {
-						alert('プロフィールURLをクリップボードにコピーしました。');
-					}, () => {
-						alert('URLのコピーに失敗しました。');
-					});
+					shareUrlInput.value = window.location.href;
+					shareModal.style.display = 'block';
 				});
 
 				qrCodeBtn.addEventListener('click', () => {
@@ -129,13 +139,20 @@
 					});
 				});
 
-				closeBtn.addEventListener('click', () => {
+				qrCloseBtn.addEventListener('click', () => {
 					qrModal.style.display = 'none';
+				});
+
+				shareCloseBtn.addEventListener('click', () => {
+					shareModal.style.display = 'none';
 				});
 
 				window.addEventListener('click', (event) => {
 					if (event.target === qrModal) {
 						qrModal.style.display = 'none';
+					}
+					if (event.target === shareModal) {
+						shareModal.style.display = 'none';
 					}
 				});
 			}

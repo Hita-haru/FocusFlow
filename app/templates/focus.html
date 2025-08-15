@@ -244,7 +244,9 @@
 
                 state.statusUpdateIntervalId = setInterval(() => {
                     console.log('setInterval: Calling sendUserStatusUpdate');
-                    sendUserStatusUpdate(state.mode === 'FOCUS' ? 'フォーカス中' : '休憩中', Math.round(state.gaugeLevel));
+                    if (!state.isFlowState) { // Only send status update if not in flow state
+                        sendUserStatusUpdate(state.mode === 'FOCUS' ? 'フォーカス中' : '休憩中', Math.round(state.gaugeLevel));
+                    }
                 }, 5000);
 
                 tick();
