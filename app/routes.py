@@ -184,8 +184,13 @@ def create_room():
         name = request.form.get('name')
         description = request.form.get('description')
         is_public = request.form.get('is_public') == 'on'
+        password = request.form.get('password')
         
         new_room = FocusRoom(name=name, description=description, is_public=is_public, owner=current_user)
+
+        if not is_public and password:
+            new_room.set_password(password)
+        
         db.session.add(new_room)
         new_room.participants.append(current_user)
         db.session.commit()
@@ -198,8 +203,35 @@ def create_room():
 @login_required
 def room(room_id):
     room = FocusRoom.query.get_or_404(room_id)
+    
+    # 参加者でなく、かつ非公開ルームの場合、パスワード入力ページへ
+    if current_user not in room.participants and not room.is_public:
+        return redirect(url_for('main.join_room', room_id=room.id))
+
+    # 公開ルームの場合、または既に参加済みの場合は、参加者リストに追加（重複はしない）
     if current_user not in room.participants:
-        flash('このルームに参加していません。')
-        return redirect(url_for('main.rooms'))
+        room.participants.append(current_user)
+        db.session.commit()
+
     return render_template('room.html', room=room)
+
+@main.route('/room/<int:room_id>/join', methods=['GET', 'POST'])
+@login_required
+def join_room(room_id):
+    room = FocusRoom.query.get_or_404(room_id)
+
+    if current_user in room.participants:
+        return redirect(url_for('main.room', room_id=room.id))
+
+    if request.method == 'POST':
+        password = request.form.get('password')
+        if room.check_password(password):
+            room.participants.append(current_user)
+            db.session.commit()
+            flash(f'ルーム「{room.name}」へようこそ！', 'success')
+            return redirect(url_for('main.room', room_id=room.id))
+        else:
+            flash('パスワードが正しくありません。', 'error')
+    
+    return render_template('enter_room_password.html', room=room)
 

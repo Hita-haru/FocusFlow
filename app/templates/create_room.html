@@ -16,11 +16,30 @@
         </div>
         <div class="form-group">
             <label class="checkbox-container">公開ルームにする
-                <input type="checkbox" name="is_public" checked>
+                <input type="checkbox" name="is_public" id="is_public_checkbox" checked>
                 <span class="checkmark"></span>
             </label>
+        </div>
+        <div class="form-group" id="password-group" style="display: none;">
+            <label for="password" class="form-label">パスワード (非公開ルーム用)</label>
+            <input type="password" name="password" id="password" class="form-control">
         </div>
         <button type="submit" class="btn btn-primary">作成</button>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const isPublicCheckbox = document.getElementById('is_public_checkbox');
+    const passwordGroup = document.getElementById('password-group');
+
+    isPublicCheckbox.addEventListener('change', () => {
+        if (isPublicCheckbox.checked) {
+            passwordGroup.style.display = 'none';
+        } else {
+            passwordGroup.style.display = 'block';
+        }
+    });
+});
+</script>
 {% endblock %}
