@@ -16,6 +16,8 @@ class User(UserMixin, db.Model):
     flow_state_logs = db.relationship('FlowStateLog', backref='user', lazy=True)
     status = db.Column(db.String(50), default='オフライン')
     current_gauge_level = db.Column(db.Integer, default=0)
+    joined_rooms = db.relationship('FocusRoom', secondary='participants',
+        backref=db.backref('participants', lazy='dynamic'), lazy='dynamic')
 
     followed = db.relationship(
         'User', secondary=followers,
@@ -67,3 +69,17 @@ class FlowStateLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, server_default=db.func.now())
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+class FocusRoom(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(500), nullable=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    is_public = db.Column(db.Boolean, default=True)
+
+created_rooms = db.relationship('FocusRoom', backref='owner', lazy=True)
+participants = db.table(
+    'participants',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('focus_room_id', db.Integer, db.ForeignKey('focus_room.id'))
+)
