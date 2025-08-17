@@ -1,8 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from .models import User, FocusSession, FlowStateLog, FocusRoom
-from . import db, socketio
-from flask_socketio import join_room, leave_room, emit
+from . import db
 
 main = Blueprint('main', __name__)
 
@@ -201,40 +200,3 @@ def room(room_id):
         return redirect(url_for('main.rooms'))
     return render_template('room.html', room=room)
 
-@socketio.on('join')
-def on_join(data):
-    room_id = data['room_id']
-    room = FocusRoom.query.get(room_id)
-    username = current_user.username
-    
-    if room is None or current_user not in room.participants:
-        return
-
-    join_room(room_id)
-    emit('room_message', {'msg': f'{username} has entered the room.'}, to=room_id)
-
-@socketio.on('leave')
-def on_leave(data):
-    room_id = data['room_id']
-    username = current_user.username
-    
-    leave_room(room_id)
-    emit('room_message', {'msg': f'{username} has left the room.'}, to=room_id)
-
-@socketio.on('update_status')
-def on_update_status(data):
-    room_id = data['room_id']
-    room = FocusRoom.query.get(room_id)
-    
-    if room is None or current_user not in room.participants:
-        return
-
-    current_user.status = data.get('status', current_user.status)
-    current_user.current_gauge_level = int(data.get('gauge_level', 0))
-    db.session.commit()
-
-    emit('status_updated', {
-        'username': current_user.username,
-        'status': current_user.status,
-        'gauge_level': current_user.current_gauge_level
-    }, to=room_id, include_self=False)

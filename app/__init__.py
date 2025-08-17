@@ -5,28 +5,29 @@ from flask_socketio import SocketIO
 
 db = SQLAlchemy()
 login_manager = LoginManager()
+socketio = SocketIO()
 
 def create_app():
-	app = Flask(__name__)
-	app.config['SECRET_KEY'] = 'your_secret_key'
-	app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
-	app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app = Flask(__name__)
+    app.config['SECRET_KEY'] = 'your_secret_key'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-	socketio = SocketIO(app)
+    db.init_app(app)
+    login_manager.init_app(app)
+    socketio.init_app(app)
 
-	db.init_app(app)
-	login_manager.init_app(app)
-	login_manager.login_view = 'main.login'
+    from .models import User
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
 
-	from .models import User
-	@login_manager.user_loader
-	def load_user(user_id):
-		return User.query.get(int(user_id))
+    from .routes import main as main_blueprint
+    app.register_blueprint(main_blueprint)
 
-	from .routes import main as main_blueprint
-	app.register_blueprint(main_blueprint)
+    from . import events # events.py をインポート
 
-	with app.app_context():
-		db.create_all()
+    with app.app_context():
+        db.create_all()
 
-	return app
+    return app
