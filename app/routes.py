@@ -1,9 +1,8 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
-from .models import User, FocusSession, FlowStateLog
-from . import db, SocketIO
-from .models import FocusRoom
-from flask_socketio import SocketIO, join_room, leave_room, emit
+from .models import User, FocusSession, FlowStateLog, FocusRoom
+from . import db, socketio
+from flask_socketio import join_room, leave_room, emit
 
 main = Blueprint('main', __name__)
 
@@ -202,41 +201,40 @@ def room(room_id):
         return redirect(url_for('main.rooms'))
     return render_template('room.html', room=room)
 
-@SocketIO.on('join')
+@socketio.on('join')
 def on_join(data):
     room_id = data['room_id']
+    room = FocusRoom.query.get(room_id)
     username = current_user.username
-    if current_user not in room.participants:
-        return {'status': 'error', 'message': '参加していないルームです。'}
     
-    join_room(room_id)
-    emit('join_room', {'username': username, 'room_id': room_id})
-    return {'status': 'success', 'message': f'{current_user.username}がルームに参加しました。'}
+    if room is None or current_user not in room.participants:
+        return
 
-@SocketIO.on('leave')
+    join_room(room_id)
+    emit('room_message', {'msg': f'{username} has entered the room.'}, to=room_id)
+
+@socketio.on('leave')
 def on_leave(data):
     room_id = data['room_id']
     username = current_user.username
+    
     leave_room(room_id)
-    emit('leave_room', {'username': username, 'room_id': room_id})
-    return {'status': 'success', 'message': f'{current_user.username}がルームを退出しました。'}
+    emit('room_message', {'msg': f'{username} has left the room.'}, to=room_id)
 
-@SocketIO.on('update_status')
+@socketio.on('update_status')
 def on_update_status(data):
     room_id = data['room_id']
-    status = data['status']
-    gauge_level = data.get('gauge_level', 0)
+    room = FocusRoom.query.get(room_id)
+    
+    if room is None or current_user not in room.participants:
+        return
 
-    if current_user not in FocusRoom.query.get(room_id).participants:
-        return {'status': 'error', 'message': '参加していないルームです。'}
-
-    current_user.status = status
-    current_user.current_gauge_level = int(gauge_level)
+    current_user.status = data.get('status', current_user.status)
+    current_user.current_gauge_level = int(data.get('gauge_level', 0))
     db.session.commit()
 
     emit('status_updated', {
         'username': current_user.username,
-        'status': status,
-        'gauge_level': gauge_level
-    }, room=room_id)
-    return {'status': 'success'}
+        'status': current_user.status,
+        'gauge_level': current_user.current_gauge_level
+    }, to=room_id, include_self=False)
