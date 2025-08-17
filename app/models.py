@@ -2,9 +2,18 @@ from flask_login import UserMixin
 from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
 
+# 中間テーブルは、それを使用するクラスよりも前に定義する必要があります
+
+# フォロー関係を定義するための中間テーブル
 followers = db.Table('followers',
     db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
     db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
+)
+
+# ルーム参加者を定義するための中間テーブル
+room_participants = db.Table('room_participants',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('room_id', db.Integer, db.ForeignKey('focus_room.id'), primary_key=True)
 )
 
 class User(UserMixin, db.Model):
@@ -16,14 +25,20 @@ class User(UserMixin, db.Model):
     flow_state_logs = db.relationship('FlowStateLog', backref='user', lazy=True)
     status = db.Column(db.String(50), default='オフライン')
     current_gauge_level = db.Column(db.Integer, default=0)
-    joined_rooms = db.relationship('FocusRoom', secondary='participants',
-        backref=db.backref('participants', lazy='dynamic'), lazy='dynamic')
 
+    # フォローしている/されている関係 (多対多)
     followed = db.relationship(
         'User', secondary=followers,
         primaryjoin=(followers.c.follower_id == id),
         secondaryjoin=(followers.c.followed_id == id),
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
+
+    # 作成したルーム (1対多)
+    created_rooms = db.relationship('FocusRoom', backref='owner', lazy='dynamic')
+
+    # 参加しているルーム (多対多)
+    joined_rooms = db.relationship('FocusRoom', secondary='room_participants', lazy='dynamic',
+                                   backref=db.backref('participants', lazy='dynamic'))
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -73,13 +88,6 @@ class FlowStateLog(db.Model):
 class FocusRoom(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.String(500), nullable=True)
-    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    description = db.Column(db.String(255))
     is_public = db.Column(db.Boolean, default=True)
-
-created_rooms = db.relationship('FocusRoom', backref='owner', lazy=True)
-participants = db.table(
-    'participants',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('focus_room_id', db.Integer, db.ForeignKey('focus_room.id'))
-)
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
