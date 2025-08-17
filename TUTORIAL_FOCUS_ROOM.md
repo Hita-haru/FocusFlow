@@ -1,153 +1,392 @@
-# FocusFlow開発チュートリアル - フォーカスルーム編
+# FocusFlow開発チュートリアル - フォーカスルーム編（コードあり）
 
-このチュートリアルでは、FocusFlowに複数人のユーザーが同時に集中できる「フォーカスルーム」機能を実装する手順を解説します。
+このチュートリアルでは、FocusFlowに複数人のユーザーが同時に集中できる「フォーカスルーム」機能を実装する手順を、具体的なコード例と共に解説します。
 
 ## 1. コンセプト：静かなる共闘空間
 
-フォーカスルームは、単なるチャットルームではありません。同じ目標を持つ仲間と**「静かに、共に集中する」**ための空間です。ここでの主役は会話ではなく、各々の集中状態そのものです。
+フォーカスルームは、同じ目標を持つ仲間と**「静かに、共に集中する」**ための空間です。核心技術は**WebSocket**によるリアルタイム通信です。
 
-*   **目的**: 互いの存在を感じながらも、集中を妨げない環境を提供する。
-*   **核心技術**: **WebSocket**によるリアルタイム通信。これにより、サーバーを介して各ユーザーのブラウザ間で情報を瞬時に同期させます。
+## 2. ライブラリのインストール
 
-## 2. 実装へのロードマップ
+まず、リアルタイム通信を実現するためのライブラリをインストールします。
 
-このチュートリアルは、以下の4ステップで実装を進めていきます。
-
-1.  **データベース設計**: ルームの情報を保存するための新しいテーブルを定義します。
-2.  **バックエンド実装 (Flask)**: WebSocketサーバーをセットアップし、ルームの作成、入退室、リアルタイム通信のロジックを構築します。
-3.  **フロントエンド実装 (HTML/JavaScript)**: ルームの一覧ページ、ルーム内のページを作成し、WebSocketと連携してUIを動的に更新します。
-4.  **既存機能との連携**: フォーカスモード中のゲージ情報をルーム内にリアルタイムで反映させます。
+```bash
+pip install Flask-SocketIO
+```
 
 ---
 
-## Step 1: データベース設計 (models.py)
+## Step 1: データベース設計 (`app/models.py`)
 
-まず、フォーカスルームの情報を永続化するための器をデータベースに用意します。
+ルームの情報と、ユーザーとルームの関係を定義します。
 
-### 必要なテーブル定義
+### `app/models.py` の全体像
 
-`app/models.py`に、以下の仕様で新しい`FocusRoom`モデルクラスを追加する必要があります。
+既存の`followers`テーブルの下に、新しい中間テーブル`room_participants`を追加し、`FocusRoom`モデルを新設します。また、`User`モデルにリレーションシップを追加します。
 
-*   **`FocusRoom`モデル**:
-    *   `id`: 主キー
-    *   `name`: ルーム名 (文字列)
-    *   `description`: ルームの説明や目標 (テキスト)
-    *   `is_public`: 公開ルームかどうかの真偽値
-    *   `owner_id`: ルーム作成者のID (`user.id`への外部キー)
+```python
+# app/models.py
 
-### リレーションシップの定義（詳細解説）
+from flask_login import UserMixin
+from . import db
+from werkzeug.security import generate_password_hash, check_password_hash
 
-ユーザーとルームの間の「誰が作成したか」「誰が参加しているか」という関係性を、データベース上で表現します。これにはFlask-SQLAlchemyの`relationship`機能を使います。
+# フォロー関係の中間テーブル (既存)
+followers = db.Table('followers',
+    db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
+)
 
-#### 1. 作成者との関係（1対多）
+# ★【新規】ルーム参加者の中間テーブル
+room_participants = db.Table('room_participants',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('room_id', db.Integer, db.ForeignKey('focus_room.id'), primary_key=True)
+)
 
-一人のユーザーが複数のルームを作成できる、という関係です。
+class User(UserMixin, db.Model):
+    # ... 既存のカラム定義 ...
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    username = db.Column(db.String(100), nullable=False)
+    password_hash = db.Column(db.String(128))
+    sessions = db.relationship('FocusSession', backref='author', lazy=True)
+    flow_state_logs = db.relationship('FlowStateLog', backref='user', lazy=True)
+    status = db.Column(db.String(50), default='オフライン')
+    current_gauge_level = db.Column(db.Integer, default=0)
 
-*   **`FocusRoom`モデル側（「多」側）**:
-    *   `owner_id`カラムに`db.ForeignKey('user.id')`を追加します。これは「このカラムの値は、`user`テーブルの`id`を参照しています」という宣言です。これにより、各ルームがどのユーザーに所有されているかが記録されます。
+    # ... 既存のfollowedリレーションシップ ...
+    followed = db.relationship(
+        'User', secondary=followers,
+        primaryjoin=(followers.c.follower_id == id),
+        secondaryjoin=(followers.c.followed_id == id),
+        backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
 
-*   **`User`モデル側（「1」側）**:
-    *   `created_rooms = db.relationship('FocusRoom', backref='owner', lazy=True)`のような記述を追加します。
-    *   これはSQLのテーブルに新しいカラムを作るものではなく、SQLAlchemyが裏側で賢く連携してくれるための「魔法の杖」のようなものです。
-    *   `'FocusRoom'`：関連付けるモデル名を指定します。
-    *   `backref='owner'`: これを設定すると、`FocusRoom`のインスタンスから`.owner`という属性で、そのルームを作成した`User`インスタンスに簡単にアクセスできるようになります。（例：`my_room.owner.username`）
-    *   `lazy=True`: `a_user.created_rooms`にアクセスしたタイミングで、初めて関連するルームの情報をデータベースから読み込みます。効率的なデータ取得に役立ちます。
+    # ★【追加】ルームとのリレーションシップ
+    # 自身が作成したルーム (1対多)
+    created_rooms = db.relationship('FocusRoom', backref='owner', lazy='dynamic')
+    # 参加しているルーム (多対多)
+    joined_rooms = db.relationship('FocusRoom', secondary=room_participants, lazy='dynamic',
+                                   backref=db.backref('participants', lazy='dynamic'))
 
-#### 2. 参加者との関係（多対多）
+    # ... 既存のメソッド ...
 
-一人のユーザーが複数のルームに参加でき、一つのルームには複数のユーザーが参加できる、という複雑な関係です。これを実現するには、「中間テーブル」という第三者のテーブルが必要です。
 
-*   **ステップ1: 中間テーブルの作成**
-    *   `participants`という名前で、`db.Table`を使ってモデルクラスとは別に定義します。
-    *   このテーブルは、どのユーザー(`user_id`)がどのルーム(`focus_room_id`)に参加しているか、という情報だけを記録するシンプルなテーブルです。
-    *   カラムは`db.Column('user_id', db.Integer, db.ForeignKey('user.id'))`と`db.Column('focus_room_id', db.Integer, db.ForeignKey('focus_room.id'))`の2つだけを持つのが一般的です。
+class FocusSession(db.Model):
+    # ... 変更なし ...
+    id = db.Column(db.Integer, primary_key=True)
+    task_name = db.Column(db.String(200), nullable=False)
+    duration_minutes = db.Column(db.Integer, nullable=False)
+    timestamp = db.Column(db.DateTime, server_default=db.func.now())
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-*   **ステップ2: `User`モデルと`FocusRoom`モデルへの`relationship`の追加**
-    *   `User`モデルに、`joined_rooms = db.relationship(...)`のような関係を定義します。
-    *   `FocusRoom`モデルにも、`participants = db.relationship(...)`のような関係を定義します。
-    *   これらの`relationship`では、`secondary=participants`という引数を指定します。これが「この関係は`participants`という中間テーブルを使って実現してください」というSQLAlchemyへの指示になります。
+class FlowStateLog(db.Model):
+    # ... 変更なし ...
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, server_default=db.func.now())
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-**作業のヒント**:
-この多対多リレーションシップの実装方法は、`app/models.py`に既に存在する`followers`テーブルと、それを利用している`User`モデルの`followed`リレーションシップの構造と全く同じです。既存のコードを参考にすることで、より理解が深まるはずです。
+
+# ★【新規】FocusRoomモデル
+class FocusRoom(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(255))
+    is_public = db.Column(db.Boolean, default=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    def __repr__(self):
+        return f'<FocusRoom {self.name}>'
+```
+**注意**: データベース構造が変更されたため、一度`instance/db.sqlite`ファイルを削除して、データベースをリセットする必要があります。
 
 ---
 
-## Step 2: バックエンド実装 (Flask & Flask-SocketIO)
+## Step 2: バックエンド実装 (初期化とルーティング)
 
-アプリケーションの心臓部となるリアルタイム通信のロジックを構築します。
+WebSocketサーバーを起動し、ルーム関連のURLとリアルタイム通信の処理を実装します。
 
-### WebSocketライブラリの導入
+### `app/__init__.py` の修正
 
-FlaskでWebSocketを扱うには、`Flask-SocketIO`ライブラリが非常に強力で一般的です。
+`SocketIO`インスタンスを作成し、アプリケーションに組み込みます。
 
-*   **インストール**: `pip install Flask-SocketIO` を実行してライブラリをプロジェクトに追加します。
-*   **初期化**: `app/__init__.py`で、`SocketIO`インスタンスを作成し、Flaskアプリケーションと連携させる設定を追加します。
+```python
+# app/__init__.py
 
-### 新しいルートの作成 (`routes.py`)
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
+from flask_socketio import SocketIO # ★追加
 
-ルームの管理に必要なWebページ用のルートを追加します。
+db = SQLAlchemy()
+login_manager = LoginManager()
+socketio = SocketIO() # ★追加
 
-*   `/rooms`: 公開されているフォーカスルームの一覧を表示するページ。
-*   `/create_room` (GET, POST): 新しいルームを作成するためのフォームページと、フォーム送信を処理するロジック。
-*   `/room/<room_id>`: 特定のルームのメインページ。このページでWebSocket通信が開始されます。
+def create_app():
+    app = Flask(__name__)
+    app.config['SECRET_KEY'] = 'your_secret_key'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-### SocketIOイベントの設計
+    db.init_app(app)
+    login_manager.init_app(app)
+    login_manager.login_view = 'main.login'
+    socketio.init_app(app) # ★追加
 
-`routes.py`（または新しく作成する`events.py`など）に、WebSocketの通信イベントを定義します。これらは`@socketio.on('イベント名')`デコレータを使って実装します。
+    # ... 既存のコード ...
+    from .routes import main as main_blueprint
+    app.register_blueprint(main_blueprint)
 
-*   **`join`イベント**:
-    *   クライアント（ブラウザ）がルームに参加したときに呼び出されます。
-    *   サーバー側では、`flask_socketio.join_room()`関数を使い、そのクライアントを特定のルーム名のグループに参加させます。
-    *   参加が完了したら、ルーム内の全クライアントに「〇〇さんが入室しました」という情報をブロードキャスト（一斉送信）します。
-*   **`leave`イベント**:
-    *   クライアントがルームから退出したときに呼び出されます。
-    *   `flask_socketio.leave_room()`関数でグループから離脱させます。
-    *   ルーム内の全クライアントに「〇〇さんが退室しました」という情報をブロードキャストします。
-*   **`update_status`イベント**:
-    *   クライアントのフォーカスゲージやステータスが変更されたときに呼び出されます。
-    *   受け取った新しいステータス情報を、送信者を除くルーム内の全クライアントにブロードキャストします。これにより、他のユーザーの画面にリアルタイムで変更が反映されます。
+    with app.app_context():
+        db.create_all()
+
+    return app
+```
+
+### `run.py` の修正
+
+Flask標準のサーバーではなく、`socketio`を使ってアプリケーションを起動するように変更します。
+
+```python
+# run.py
+
+from app import create_app, db, socketio # ★ socketioをインポート
+
+app = create_app()
+
+# with app.app_context():
+#     db.create_all() # create_app()内で実行されるので不要な場合が多い
+
+if __name__ == '__main__':
+    # app.run(host='0.0.0.0',port=80,debug=True) # ★変更前
+    socketio.run(app, host='0.0.0.0', port=80, debug=True) # ★変更後
+```
+
+### `app/routes.py` へのルートとイベントの追加
+
+ルーム一覧、作成、入室のルートと、WebSocketイベントハンドラを追加します。
+
+```python
+# app/routes.py
+
+# ... 既存のimport ...
+from flask_socketio import join_room, leave_room, emit
+from . import socketio
+from .models import FocusRoom # ★追加
+
+# ... 既存のルート ...
+
+# ★ここから下を追記
+
+@main.route('/rooms')
+@login_required
+def rooms():
+    public_rooms = FocusRoom.query.filter_by(is_public=True).all()
+    return render_template('rooms.html', rooms=public_rooms)
+
+@main.route('/create_room', methods=['GET', 'POST'])
+@login_required
+def create_room():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        is_public = request.form.get('is_public') == 'on'
+        
+        new_room = FocusRoom(name=name, description=description, is_public=is_public, owner=current_user)
+        db.session.add(new_room)
+        # 作成者は自動的に参加者になる
+        new_room.participants.append(current_user)
+        db.session.commit()
+        
+        return redirect(url_for('main.room', room_id=new_room.id))
+    return render_template('create_room.html')
+
+@main.route('/room/<int:room_id>')
+@login_required
+def room(room_id):
+    room = FocusRoom.query.get_or_404(room_id)
+    # 参加者でなければ参加させるロジック（必要に応じて）
+    if current_user not in room.participants:
+        room.participants.append(current_user)
+        db.session.commit()
+    
+    return render_template('room.html', room=room)
+
+## --- SocketIO Events ---
+
+@socketio.on('join')
+def on_join(data):
+    username = current_user.username
+    room_id = data['room_id']
+    join_room(room_id)
+    emit('room_message', {'msg': username + ' has entered the room.'}, to=room_id)
+
+@socketio.on('leave')
+def on_leave(data):
+    username = current_user.username
+    room_id = data['room_id']
+    leave_room(room_id)
+    emit('room_message', {'msg': username + ' has left the room.'}, to=room_id)
+
+@socketio.on('update_status')
+def on_update_status(data):
+    room_id = data['room_id']
+    # 送信者以外のルームメンバーにブロードキャスト
+    emit('status_updated', {
+        'username': current_user.username,
+        'status': data['status'],
+        'gauge_level': data['gauge_level']
+    }, to=room_id, include_self=False)
+
+```
 
 ---
 
 ## Step 3: フロントエンド実装 (HTML & JavaScript)
 
-ユーザーが実際に目にする画面と、その裏で動くロジックを作成します。
+ユーザーが操作する画面を作成します。
 
-### 新しいHTMLテンプレートの作成
+### `app/templates/rooms.html` (新規作成)
 
-`app/templates/`ディレクトリに、以下のHTMLファイルを追加します。
+```html
+{% extends "base.html" %}
 
-*   `rooms.html`: ルーム一覧ページ。`routes.py`の`/rooms`ルートから渡されたルームのリストをループで表示します。
-*   `create_room.html`: ルーム作成フォーム。
-*   `room.html`: フォーカスルームのメインページ。参加者リスト、チャット（もし実装する場合）、各メンバーの匿名化されたフォーカスゲージを表示するエリアをHTMLで構築します。
+{% block title %}フォーカスルーム一覧{% endblock %}
 
-### JavaScriptによるSocketIOクライアントの実装
+{% block content %}
+<div class="card">
+    <h2>フォーカスルーム一覧</h2>
+    <a href="{{ url_for('main.create_room') }}" class="btn btn-primary mb-3">新しいルームを作成する</a>
+    <ul class="list-group">
+        {% for room in rooms %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                <h5>{{ room.name }}</h5>
+                <p class="mb-1">{{ room.description }}</p>
+                <small>作成者: {{ room.owner.username }} | 参加者: {{ room.participants.count() }}人</small>
+            </div>
+            <a href="{{ url_for('main.room', room_id=room.id) }}" class="btn btn-secondary">入室する</a>
+        </li>
+        {% else %}
+        <li class="list-group-item">現在、公開中のルームはありません。</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
+```
 
-`room.html`内に`<script>`タグを追加し、JavaScriptでWebSocketサーバーとの通信を実装します。
+### `app/templates/create_room.html` (新規作成)
 
-*   **ライブラリの読み込み**: `Flask-SocketIO`はクライアント用のJavaScriptライブラリを提供しています。これを`<script>`タグで読み込みます。
-*   **接続とイベントハンドラ**:
-    *   `io.connect()`を使ってサーバーに接続します。
-    *   接続が確立したら、`socket.emit('join', {room: 'ルームID'})`のようにして、先ほどバックエンドで定義した`join`イベントをサーバーに送信します。
-    *   `socket.on('イベント名', (data) => { ... })`の形で、サーバーから送られてくるイベントを待ち受けます。例えば、サーバーから`status_updated`イベントが送られてきたら、受け取ったデータ(`data`)を使って特定のユーザーのゲージ表示を更新する、といったDOM操作のコードを記述します。
+```html
+{% extends "base.html" %}
+
+{% block title %}ルーム作成{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>新しいフォーカスルームを作成</h2>
+    <form method="POST">
+        <div class="form-group">
+            <label for="name" class="form-label">ルーム名</label>
+            <input type="text" name="name" id="name" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="description" class="form-label">説明</label>
+            <textarea name="description" id="description" class="form-control"></textarea>
+        </div>
+        <div class="form-group">
+            <label class="checkbox-container">公開ルームにする
+                <input type="checkbox" name="is_public" checked>
+                <span class="checkmark"></span>
+            </label>
+        </div>
+        <button type="submit" class="btn btn-primary">作成</button>
+    </form>
+</div>
+{% endblock %}
+```
+
+### `app/templates/room.html` (新規作成)
+
+```html
+{% extends "base.html" %}
+
+{% block title %}{{ room.name }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>{{ room.name }}</h2>
+    <p>{{ room.description }}</p>
+    <hr>
+    <h4>参加者</h4>
+    <div id="participants-list">
+        {% for user in room.participants %}
+        <div id="user-{{ user.username }}" class="participant-card">
+            <strong>{{ user.username }}</strong>
+            <p>ステータス: <span class="status">{{ user.status }}</span></p>
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: {{ user.current_gauge_level }}%;" aria-valuenow="{{ user.current_gauge_level }}" aria-valuemin="0" aria-valuemax="100">
+                    {{ user.current_gauge_level }}%
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+<div class="card mt-4">
+    <h4>ルームメッセージ</h4>
+    <div id="messages" style="height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></div>
+</div>
+
+<!-- Socket.IOクライアントライブラリ -->
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const socket = io();
+    const roomId = "{{ room.id }}";
+
+    // サーバーに接続したらjoinイベントを送信
+    socket.on('connect', () => {
+        socket.emit('join', { room_id: roomId });
+    });
+
+    // サーバーからメッセージを受信
+    socket.on('room_message', (data) => {
+        const messages = document.getElementById('messages');
+        messages.innerHTML += `<p>${data.msg}</p>`;
+        messages.scrollTop = messages.scrollHeight;
+    });
+
+    // 他のユーザーのステータス更新を受信
+    socket.on('status_updated', (data) => {
+        const userCard = document.getElementById(`user-${data.username}`);
+        if (userCard) {
+            userCard.querySelector('.status').textContent = data.status;
+            const progressBar = userCard.querySelector('.progress-bar');
+            progressBar.style.width = `${data.gauge_level}%`;
+            progressBar.textContent = `${data.gauge_level}%`;
+            progressBar.setAttribute('aria-valuenow', data.gauge_level);
+        }
+    });
+
+    // ウィンドウを閉じる時にleaveイベントを送信
+    window.addEventListener('beforeunload', () => {
+        socket.emit('leave', { room_id: roomId });
+    });
+});
+</script>
+{% endblock %}
+```
 
 ---
 
 ## Step 4: 既存機能との連携
 
-最後に、フォーカスモードとルーム機能を連携させます。
+`focus.html`から、ルームにステータスを送信する仕組みは、より高度な実装（例：フォーカスモード開始時にどのルームに参加するか選択させるなど）が必要になります。
 
-### フォーカスゲージの情報を送信する
-
-`app/templates/focus.html`のJavaScriptを修正します。
-
-*   **現状**: `focus.html`の`sendUserStatusUpdate`関数は、`fetch`を使ってユーザー自身のステータスをサーバーに送信しています。
-*   **変更後**: この`sendUserStatusUpdate`関数に、**もしユーザーがフォーカスルームに参加している場合**は、`socket.emit('update_status', ...)`を実行して、現在のゲージレベルとステータスをルームにもブロードキャストする処理を追加します。
-
-これにより、ユーザーが一人でフォーカスモードに入るとその情報はプロフィールに反映され、ルーム内でフォーカスモードに入ると、その集中状態がルームメンバーにもリアルタイムで共有されるようになります。
+概念的な実装としては、`focus.html`のJavaScriptに、現在の`roomId`を何らかの形で（例：URLパラメータや`sessionStorage`経由で）渡し、`socket.io`の接続を確立します。そして、`tick`関数や`sendUserStatusUpdate`関数内で、`socket.emit('update_status', ...)`を呼び出すことで、ゲージ情報をルームに送信できます。
 
 ## まとめ
 
-お疲れ様でした！このチュートリアルで概説したステップを実装することで、FocusFlowにインタラクティブな「フォーカスルーム」機能が追加され、ユーザーは孤独な作業から解放され、仲間と共に集中力を高める新たな体験を得ることができます。
+お疲れ様でした！このチュートリアルで実装したコードにより、FocusFlowにリアルタイムで他のユーザーの存在を感じられる「フォーカスルーム」が追加されました。
 
-ここからさらに、ホワイトボード機能やBGM機能など、`focusflow.md`にある高度な機能へと発展させていくことが可能です。
+ここからさらに、UIを洗練させたり、ルーム内での「応援」機能を実装したりと、多くの可能性が広がっています。

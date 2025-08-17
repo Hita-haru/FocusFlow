@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}{{ room.name }}{% endblock %}
+
+{% block content %}
+<style>
+    .progress {
+        height: 20px;
+        background-color: #3a3a3c;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 5px;
+    }
+
+    .progress-bar {
+        height: 100%;
+        color: white;
+        text-align: center;
+        line-height: 20px;
+        background-color: var(--primary-color);
+        transition: width 0.6s ease;
+    }
+
+    .participant-card {
+        margin-bottom: 15px;
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+    }
+</style>
+<div class="card">
+    <h2>{{ room.name }}</h2>
+    <p>{{ room.description }}</p>
+    <hr>
+    <h4>参加者</h4>
+    <div id="participants-list">
+        {% for user in room.participants %}
+        <div id="user-{{ user.username }}" class="participant-card">
+            <strong>{{ user.username }}</strong>
+            <p>ステータス: <span class="status">{{ user.status }}</span></p>
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" data-gauge="{{ user.current_gauge_level }}" aria-valuenow="{{ user.current_gauge_level }}" aria-valuemin="0" aria-valuemax="100">
+                    {{ user.current_gauge_level }}%
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+<div class="card mt-4">
+    <h4>ルームメッセージ</h4>
+    <div id="messages" style="height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></div>
+</div>
+
+<!-- Socket.IOクライアントライブラリ -->
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // ★ 初期ゲージを設定
+    document.querySelectorAll('.progress-bar').forEach(bar => {
+        const level = bar.getAttribute('data-gauge');
+        bar.style.width = `${level}%`;
+        bar.textContent = `${level}%`;
+    });
+
+    const socket = io();
+    const roomId = "{{ room.id }}";
+
+    socket.on('connect', () => {
+        socket.emit('join', { room_id: roomId });
+    });
+
+    socket.on('room_message', (data) => {
+        const messages = document.getElementById('messages');
+        messages.innerHTML += `<p>${data.msg}</p>`;
+        messages.scrollTop = messages.scrollHeight;
+    });
+
+    socket.on('status_updated', (data) => {
+        const userCard = document.getElementById(`user-${data.username}`);
+        if (userCard) {
+            userCard.querySelector('.status').textContent = data.status;
+            const progressBar = userCard.querySelector('.progress-bar');
+            progressBar.style.width = `${data.gauge_level}%`;
+            progressBar.textContent = `${data.gauge_level}%`;
+            progressBar.setAttribute('aria-valuenow', data.gauge_level);
+        }
+    });
+
+    window.addEventListener('beforeunload', () => {
+        socket.emit('leave', { room_id: roomId });
+    });
+});
+</script>
+{% endblock %}

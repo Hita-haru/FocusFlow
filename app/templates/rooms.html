@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}フォーカスルーム一覧{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>フォーカスルーム一覧</h2>
+    <a href="{{ url_for('main.create_room') }}" class="btn btn-primary mb-3">新しいルームを作成する</a>
+    <ul class="list-group">
+        {% for room in rooms %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                <h5>{{ room.name }}</h5>
+                <small class="badge bg-secondary">作成者: {{ room.owner.username }} | 参加者: {{ room.participants.count() }}人</small>
+            </div>
+            <a href="{{ url_for('main.join_room', room_id=room.id) }}" class="btn btn-secondary">参加する</a>
+        </li>
+        {% else %}
+        <li class="list-group-item">現在、公開中のルームはありません。</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
