@@ -181,12 +181,15 @@ def rooms():
 @login_required
 def create_room():
     if request.method == 'POST':
-        name = request.form.get('room_name')
+        name = request.form.get('name')
+        description = request.form.get('description')
         is_public = request.form.get('is_public') == 'on'
-        new_room = FocusRoom(name=name, is_public=is_public, owner=current_user)
+        
+        new_room = FocusRoom(name=name, description=description, is_public=is_public, owner=current_user)
         db.session.add(new_room)
         new_room.participants.append(current_user)
         db.session.commit()
+        
         flash('ルームが作成されました。')
         return redirect(url_for('main.room', room_id=new_room.id))
     return render_template('create_room.html')
