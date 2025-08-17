@@ -28,7 +28,7 @@
 		<h3>参加中のルーム</h3>
 		<div class="list-group">
 			{% for room in user.joined_rooms %}
-				<a href="{{ url_for('main.room', room_id=room.id) }}" class="list-group-item list-group-item-action flex-column align-items-start">
+				<a href="{{ url_for('main.room', room_id=room.id) }}" class="list-group-item list-group-item-action flex-column align-items-start" style="border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: 15px; margin-bottom: 10px; display: block;">
 					<div class="d-flex w-100 justify-content-between">
 						<h5 class="mb-1">{{ room.name }}</h5>
 						<small>参加者: {{ room.participants.count() }}人</small>
