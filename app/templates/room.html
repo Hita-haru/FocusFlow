@@ -31,6 +31,12 @@
 <div class="card">
     <h2>{{ room.name }}</h2>
     <p>{{ room.description }}</p>
+
+    <div class="share-buttons" style="margin-top: 20px;">
+        <button id="share-btn" class="btn btn-secondary">ルームを共有</button>
+        <button id="qr-code-btn" class="btn btn-secondary">QRコードを表示</button>
+    </div>
+
     <hr>
     <h4>参加者</h4>
     <div id="participants-list">
@@ -52,8 +58,30 @@
     <div id="messages" style="height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></div>
 </div>
 
+<!-- QR Code Modal -->
+<div id="qr-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close-btn qr-close-btn">&times;</span>
+        <h3>ルームのQRコード</h3>
+        <canvas id="qr-canvas"></canvas>
+    </div>
+</div>
+
+<!-- Share URL Modal -->
+<div id="share-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close-btn share-close-btn">&times;</span>
+        <h3>ルームのURL</h3>
+        <p>以下のURLをコピーして共有してください。</p>
+        <input type="text" id="share-url-input" value="" readonly style="width: 100%; padding: 10px; margin-top: 10px; box-sizing: border-box;">
+    </div>
+</div>
+
 <!-- Socket.IOクライアントライブラリ -->
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<!-- QRコード生成ライブラリ -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     // ★ 初期ゲージを設定
@@ -90,6 +118,48 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('beforeunload', () => {
         socket.emit('leave', { room_id: roomId });
     });
+
+    // --- 共有ボタンのロジック ---
+    const shareBtn = document.getElementById('share-btn');
+    const qrCodeBtn = document.getElementById('qr-code-btn');
+
+    if (shareBtn && qrCodeBtn) {
+        const qrModal = document.getElementById('qr-modal');
+        const shareModal = document.getElementById('share-modal');
+        const qrCloseBtn = document.querySelector('.qr-close-btn');
+        const shareCloseBtn = document.querySelector('.share-close-btn');
+        const qrCanvas = document.getElementById('qr-canvas');
+        const shareUrlInput = document.getElementById('share-url-input');
+
+        shareBtn.addEventListener('click', () => {
+            shareUrlInput.value = window.location.href;
+            shareModal.style.display = 'block';
+        });
+
+        qrCodeBtn.addEventListener('click', () => {
+            qrModal.style.display = 'block';
+            QRCode.toCanvas(qrCanvas, window.location.href, { width: 256 }, (error) => {
+                if (error) console.error(error);
+            });
+        });
+
+        qrCloseBtn.addEventListener('click', () => {
+            qrModal.style.display = 'none';
+        });
+
+        shareCloseBtn.addEventListener('click', () => {
+            shareModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === qrModal) {
+                qrModal.style.display = 'none';
+            }
+            if (event.target === shareModal) {
+                shareModal.style.display = 'none';
+            }
+        });
+    }
 });
 </script>
 {% endblock %}

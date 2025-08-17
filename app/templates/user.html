@@ -25,6 +25,24 @@
 	</section>
 
 	<section class="card">
+		<h3>参加中のルーム</h3>
+		<div class="list-group">
+			{% for room in user.joined_rooms %}
+				<a href="{{ url_for('main.room', room_id=room.id) }}" class="list-group-item list-group-item-action flex-column align-items-start">
+					<div class="d-flex w-100 justify-content-between">
+						<h5 class="mb-1">{{ room.name }}</h5>
+						<small>参加者: {{ room.participants.count() }}人</small>
+					</div>
+					<p class="mb-1">{{ room.description or '説明はありません' }}</p>
+					<small>作成者: {{ room.owner.username }}</small>
+				</a>
+			{% else %}
+				<p>参加しているルームはありません。</p>
+			{% endfor %}
+		</div>
+	</section>
+
+	<section class="card">
 		<h3>{{ user.username }}さんのフォーカス履歴</h3>
 		<table class="table">
 			<thead>
