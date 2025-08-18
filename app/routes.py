@@ -5,6 +5,11 @@ from . import db
 
 main = Blueprint('main', __name__)
 
+@main.before_app_request
+def before_request():
+    if not current_user.is_authenticated and request.endpoint and 'static' not in request.endpoint and request.endpoint != 'main.login' and request.endpoint != 'main.register':
+        return redirect(url_for('main.login'))
+
 @main.route('/')
 def index():
 	return redirect(url_for('main.dashboard'))
