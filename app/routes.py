@@ -76,24 +76,107 @@ def report():
     total_focus_time = db.session.query(func.sum(FocusSession.duration_minutes)).filter(FocusSession.user_id == current_user.id).scalar() or 0
     total_sessions = FocusSession.query.filter_by(user_id=current_user.id).count()
     total_flow_states = FlowStateLog.query.filter_by(user_id=current_user.id).count()
-    
-    # --- 直近7日間のグラフデータ ---
+    avg_session_length = round(total_focus_time / total_sessions, 1) if total_sessions > 0 else 0
+
+    # --- グラフデータ (直近7日間) ---
     today = date.today()
     chart_labels = []
-    chart_data = []
+    my_chart_data = []
+    flow_chart_data = []
+    followed_avg_data = []
+
+    followed_users = current_user.followed.all()
+    num_followed = len(followed_users)
+
     for i in range(6, -1, -1):
         target_date = today - timedelta(days=i)
-        chart_labels.append(target_date.strftime('%m/%d'))
-        
         start_of_day = datetime.combine(target_date, datetime.min.time())
         end_of_day = datetime.combine(target_date, datetime.max.time())
+        chart_labels.append(target_date.strftime('%m/%d'))
         
-        daily_total = db.session.query(func.sum(FocusSession.duration_minutes)).filter(
-            FocusSession.user_id == current_user.id,
-            FocusSession.timestamp >= start_of_day,
-            FocusSession.timestamp <= end_of_day
-        ).scalar() or 0
-        chart_data.append(daily_total)
+        my_daily_total = db.session.query(func.sum(FocusSession.duration_minutes)).filter(FocusSession.user_id == current_user.id, FocusSession.timestamp.between(start_of_day, end_of_day)).scalar() or 0
+        my_chart_data.append(my_daily_total)
+
+        my_daily_flow_count = FlowStateLog.query.filter(FlowStateLog.user_id == current_user.id, FlowStateLog.timestamp.between(start_of_day, end_of_day)).count()
+        flow_chart_data.append(my_daily_flow_count)
+
+        if num_followed > 0:
+            followed_ids = [user.id for user in followed_users]
+            total_followed_minutes = db.session.query(func.sum(FocusSession.duration_minutes)).filter(FocusSession.user_id.in_(followed_ids), FocusSession.timestamp.between(start_of_day, end_of_day)).scalar() or 0
+            followed_avg_data.append(round(total_followed_minutes / num_followed, 1))
+        else:
+            followed_avg_data.append(0)
+
+    # --- 絵文字チャートロジック ---
+    weekly_total_focus = sum(my_chart_data)
+    days_with_focus = sum(1 for x in my_chart_data if x > 0)
+    weekly_flow_count = sum(flow_chart_data)
+    is_improving = sum(my_chart_data[4:]) > sum(my_chart_data[:3]) # 直近3日とそれ以前4日の比較
+    consecutive_days = 0
+    temp_days = 0
+    for minutes in reversed(my_chart_data):
+        if minutes > 0:
+            temp_days += 1
+        else:
+            break
+    consecutive_days = temp_days
+
+    status_emoji = '🧐'
+    status_text = 'あなたの集中データを分析中です...'
+
+    # 判定ロジック (優先度順)
+    if total_sessions > 0:
+        if total_sessions <= 5:
+            status_emoji = '✨'
+            status_text = 'ようこそ！FocusFlowへ。一緒に頑張りましょう！'
+        elif total_flow_states == 1 and weekly_flow_count == 1:
+            status_emoji = '💡'
+            status_text = '初めてのフロー状態！この感覚、忘れないでください。'
+        elif weekly_total_focus > 1500 and days_with_focus == 7 and weekly_flow_count > 5:
+            status_emoji = '👑'
+            status_text = '絶対王者。もはや集中力の化身です。'
+        elif weekly_total_focus > 1200 and days_with_focus >= 6 and weekly_flow_count > 10:
+            status_emoji = '🎓'
+            status_text = '探求者。深い学問の海に潜っていますね。'
+        elif weekly_total_focus > 1000 and days_with_focus >= 6:
+            status_emoji = '🔥'
+            status_text = '絶好調！素晴らしい集中力です！'
+        elif weekly_total_focus > 800 and days_with_focus >= 5:
+            status_emoji = '🚀'
+            status_text = '生産性の鬼。非常に高い集中を維持しています。'
+        elif days_with_focus == 7:
+            status_emoji = '🏃'
+            status_text = '継続の達人。長距離ランナーのように着実です。'
+        elif consecutive_days >= 3:
+            status_emoji = '📈'
+            status_text = f'{consecutive_days}日連続で集中中！波に乗っています。'
+        elif days_with_focus == 1 and weekly_total_focus > 300:
+            status_emoji = '💥'
+            status_text = '一極集中。たった一日で驚異的な成果です！'
+        elif days_with_focus <= 3 and weekly_total_focus > 400:
+            status_emoji = '⚡'
+            status_text = '短期集中型。週末などに一気に集中するタイプですね。'
+        elif weekly_flow_count > 5 and weekly_total_focus > 500:
+            status_emoji = '🧘'
+            status_text = 'フローの探求者。質の高い集中を重視していますね。'
+        elif weekly_total_focus > 400 and days_with_focus >= 4:
+            status_emoji = '👍'
+            status_text = '良いペースです。着実に学習が習慣化していますね。'
+        elif is_improving and weekly_total_focus > 120:
+            status_emoji = '🌱'
+            status_text = '成長中！週の後半にかけて調子が上がっています。'
+        elif days_with_focus > 0 and my_chart_data[-1] > 0 and weekly_total_focus < 120:
+            status_emoji = '💪'
+            status_text = '再始動！ここからの巻き返しに期待です。'
+        elif avg_session_length > 0 and avg_session_length < 15:
+            status_emoji = '☕'
+            status_text = 'スキマ時間の活用。小さな積み重ねが力になります。'
+        elif weekly_total_focus > 0:
+            status_emoji = '🙂'
+            status_text = '学習を継続できています。まずは続けることが大切です。'
+        elif weekly_total_focus == 0:
+            status_emoji = '😴'
+            status_text = '少し休憩中かな？まずは短い時間から始めてみましょう。'
 
     # --- 最近のセッション履歴 ---
     recent_sessions = FocusSession.query.filter_by(user_id=current_user.id).order_by(FocusSession.timestamp.desc()).limit(10).all()
@@ -103,8 +186,12 @@ def report():
                            total_sessions=total_sessions,
                            total_flow_states=total_flow_states,
                            chart_labels=chart_labels,
-                           chart_data=chart_data,
-                           recent_sessions=recent_sessions)
+                           my_chart_data=my_chart_data,
+                           flow_chart_data=flow_chart_data,
+                           followed_avg_data=followed_avg_data,
+                           recent_sessions=recent_sessions,
+                           status_emoji=status_emoji,
+                           status_text=status_text)
 
 
 @main.route('/focus')

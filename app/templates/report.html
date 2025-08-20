@@ -3,8 +3,24 @@
 {% block title %}フォーカスレポート{% endblock %}
 
 {% block content %}
+<style>
+    .display-4 {
+        font-size: 2.5rem;
+        font-weight: bold;
+    }
+    .emoji-chart-emoji {
+        font-size: 5rem;
+    }
+</style>
 <div class="container">
     <h2 class="mb-4">フォーカスレポート</h2>
+
+    <!-- 絵文字チャート -->
+    <div class="card text-center">
+        <h3>今週のあなたの状態</h3>
+        <p class="emoji-chart-emoji">{{ status_emoji }}</p>
+        <p class="lead">{{ status_text }}</p>
+    </div>
 
     <!-- 総合統計 -->
     <div class="row">
@@ -28,10 +44,16 @@
         </div>
     </div>
 
-    <!-- 週間フォーカスグラフ -->
+    <!-- 週間フォーカスグラフ（複合） -->
     <div class="card">
-        <h3>直近7日間の集中時間 (分)</h3>
+        <h3>直近7日間の活動</h3>
         <canvas id="focusChart"></canvas>
+    </div>
+
+    <!-- 比較グラフ -->
+    <div class="card">
+        <h3>フォローユーザーとの比較 (平均集中時間)</h3>
+        <canvas id="comparisonChart"></canvas>
     </div>
 
     <!-- 最近のセッション履歴 -->
@@ -69,45 +91,110 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const ctx = document.getElementById('focusChart').getContext('2d');
-    const focusChart = new Chart(ctx, {
+    const chartLabels = {{ chart_labels|tojson }};
+    const myChartData = {{ my_chart_data|tojson }};
+    const flowChartData = {{ flow_chart_data|tojson }};
+    const followedAvgData = {{ followed_avg_data|tojson }};
+    const textColor = '#f2f2f7';
+    const gridColor = 'rgba(242, 242, 247, 0.1)';
+
+    // --- メイングラフ（集中時間とフロー回数） ---
+    const ctxMain = document.getElementById('focusChart').getContext('2d');
+    new Chart(ctxMain, {
         type: 'bar',
         data: {
-            labels: {{ chart_labels|tojson }},
-            datasets: [{
-                label: '集中時間 (分)',
-                data: {{ chart_data|tojson }},
-                backgroundColor: 'rgba(0, 122, 255, 0.5)',
-                borderColor: 'rgba(0, 122, 255, 1)',
-                borderWidth: 1
-            }]
+            labels: chartLabels,
+            datasets: [
+                {
+                    label: '集中時間 (分)',
+                    data: myChartData,
+                    backgroundColor: 'rgba(0, 122, 255, 0.5)',
+                    borderColor: 'rgba(0, 122, 255, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y',
+                },
+                {
+                    label: 'フロー達成回数',
+                    data: flowChartData,
+                    type: 'line',
+                    borderColor: 'rgba(255, 0, 255, 1)',
+                    backgroundColor: 'rgba(255, 0, 255, 0.5)',
+                    tension: 0.3,
+                    yAxisID: 'y1',
+                }
+            ]
+        },
+        options: {
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    beginAtZero: true,
+                    title: { display: true, text: '集中時間 (分)', color: textColor },
+                    ticks: { color: textColor },
+                    grid: { color: gridColor }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    beginAtZero: true,
+                    title: { display: true, text: 'フロー回数', color: textColor },
+                    ticks: { color: textColor, stepSize: 1 },
+                    grid: { drawOnChartArea: false }
+                },
+                x: {
+                    ticks: { color: textColor },
+                    grid: { color: gridColor }
+                }
+            },
+            plugins: {
+                legend: { labels: { color: textColor } }
+            }
+        }
+    });
+
+    // --- 比較グラフ（自分とフォロー平均） ---
+    const ctxCompare = document.getElementById('comparisonChart').getContext('2d');
+    new Chart(ctxCompare, {
+        type: 'line',
+        data: {
+            labels: chartLabels,
+            datasets: [
+                {
+                    label: '自分',
+                    data: myChartData,
+                    borderColor: 'rgba(0, 122, 255, 1)',
+                    backgroundColor: 'rgba(0, 122, 255, 0.2)',
+                    fill: true,
+                    tension: 0.3
+                },
+                {
+                    label: 'フォロー中のユーザーの平均',
+                    data: followedAvgData,
+                    borderColor: 'rgba(255, 165, 0, 1)',
+                    backgroundColor: 'rgba(255, 165, 0, 0.2)',
+                    fill: true,
+                    tension: 0.3
+                }
+            ]
         },
         options: {
             scales: {
                 y: {
                     beginAtZero: true,
-                    ticks: {
-                        color: '#f2f2f7' // ダークテーマ用の文字色
-                    },
-                    grid: {
-                        color: 'rgba(242, 242, 247, 0.1)' // ダークテーマ用のグリッド線色
-                    }
+                    title: { display: true, text: '集中時間 (分)', color: textColor },
+                    ticks: { color: textColor },
+                    grid: { color: gridColor }
                 },
                 x: {
-                    ticks: {
-                        color: '#f2f2f7' // ダークテーマ用の文字色
-                    },
-                    grid: {
-                        color: 'rgba(242, 242, 247, 0.1)' // ダークテーマ用のグリッド線色
-                    }
+                    ticks: { color: textColor },
+                    grid: { color: gridColor }
                 }
             },
             plugins: {
-                legend: {
-                    labels: {
-                        color: '#f2f2f7' // ダークテーマ用の凡例文字色
-                    }
-                }
+                legend: { labels: { color: textColor } }
             }
         }
     });
