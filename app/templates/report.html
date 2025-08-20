@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}フォーカスレポート{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">フォーカスレポート</h2>
+
+    <!-- 総合統計 -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <h4>合計フォーカス時間</h4>
+                <p class="display-4">{{ total_focus_time }}分</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <h4>合計セッション数</h4>
+                <p class="display-4">{{ total_sessions }}回</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <h4>フロー状態達成回数</h4>
+                <p class="display-4">{{ total_flow_states }}回</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 週間フォーカスグラフ -->
+    <div class="card">
+        <h3>直近7日間の集中時間 (分)</h3>
+        <canvas id="focusChart"></canvas>
+    </div>
+
+    <!-- 最近のセッション履歴 -->
+    <div class="card">
+        <h3>最近のフォーカス履歴</h3>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>タスク名</th>
+                        <th>フォーカス時間（分）</th>
+                        <th>日時</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in recent_sessions %}
+                    <tr>
+                        <td>{{ session.task_name }}</td>
+                        <td>{{ session.duration_minutes }}</td>
+                        <td>{{ session.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3">まだフォーカス履歴がありません。</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.jsライブラリ -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const ctx = document.getElementById('focusChart').getContext('2d');
+    const focusChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart_labels|tojson }},
+            datasets: [{
+                label: '集中時間 (分)',
+                data: {{ chart_data|tojson }},
+                backgroundColor: 'rgba(0, 122, 255, 0.5)',
+                borderColor: 'rgba(0, 122, 255, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: '#f2f2f7' // ダークテーマ用の文字色
+                    },
+                    grid: {
+                        color: 'rgba(242, 242, 247, 0.1)' // ダークテーマ用のグリッド線色
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: '#f2f2f7' // ダークテーマ用の文字色
+                    },
+                    grid: {
+                        color: 'rgba(242, 242, 247, 0.1)' // ダークテーマ用のグリッド線色
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#f2f2f7' // ダークテーマ用の凡例文字色
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

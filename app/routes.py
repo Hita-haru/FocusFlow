@@ -2,6 +2,8 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash,
 from flask_login import login_user, logout_user, login_required, current_user
 from .models import User, FocusSession, FlowStateLog, FocusRoom
 from . import db
+from sqlalchemy import func
+from datetime import date, timedelta, datetime
 
 main = Blueprint('main', __name__)
 
@@ -66,6 +68,44 @@ def dashboard():
     followed_users_ids = [user.id for user in current_user.followed]
     followed_flow_logs = FlowStateLog.query.filter(FlowStateLog.user_id.in_(followed_users_ids)).order_by(FlowStateLog.timestamp.desc()).all()
     return render_template('dashboard.html', username=current_user.username, my_sessions=my_sessions, followed_flow_logs=followed_flow_logs)
+
+@main.route('/report')
+@login_required
+def report():
+    # --- 総合統計 ---
+    total_focus_time = db.session.query(func.sum(FocusSession.duration_minutes)).filter(FocusSession.user_id == current_user.id).scalar() or 0
+    total_sessions = FocusSession.query.filter_by(user_id=current_user.id).count()
+    total_flow_states = FlowStateLog.query.filter_by(user_id=current_user.id).count()
+    
+    # --- 直近7日間のグラフデータ ---
+    today = date.today()
+    chart_labels = []
+    chart_data = []
+    for i in range(6, -1, -1):
+        target_date = today - timedelta(days=i)
+        chart_labels.append(target_date.strftime('%m/%d'))
+        
+        start_of_day = datetime.combine(target_date, datetime.min.time())
+        end_of_day = datetime.combine(target_date, datetime.max.time())
+        
+        daily_total = db.session.query(func.sum(FocusSession.duration_minutes)).filter(
+            FocusSession.user_id == current_user.id,
+            FocusSession.timestamp >= start_of_day,
+            FocusSession.timestamp <= end_of_day
+        ).scalar() or 0
+        chart_data.append(daily_total)
+
+    # --- 最近のセッション履歴 ---
+    recent_sessions = FocusSession.query.filter_by(user_id=current_user.id).order_by(FocusSession.timestamp.desc()).limit(10).all()
+
+    return render_template('report.html',
+                           total_focus_time=total_focus_time,
+                           total_sessions=total_sessions,
+                           total_flow_states=total_flow_states,
+                           chart_labels=chart_labels,
+                           chart_data=chart_data,
+                           recent_sessions=recent_sessions)
+
 
 @main.route('/focus')
 @login_required
