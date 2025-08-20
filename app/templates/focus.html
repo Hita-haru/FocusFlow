@@ -59,6 +59,13 @@
         </div>
     </div>
 
+    <div id="debug-controls" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px; z-index: 9999;">
+        <h4 style="color: white; margin-top: 0; margin-bottom: 5px;">Debug</h4>
+        <button id="debug-gauge-0" class="btn btn-sm" style="margin-bottom: 5px;">Set Gauge 0</button>
+        <button id="debug-gauge-50" class="btn btn-sm" style="margin-bottom: 5px;">Set Gauge 50</button>
+        <button id="debug-gauge-100" class="btn btn-sm">Set Gauge 100</button>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const FOCUS_TIME_SECONDS = 25 * 60;
@@ -197,7 +204,7 @@
 
             function tick() {
                 if (Date.now() >= state.targetTime) { startPhase(state.mode === 'FOCUS' ? 'BREAK' : 'FOCUS'); }
-                if (!document.hidden && state.mode === 'FOCUS') { state.gaugeLevel = Math.min(100, state.gaugeLevel + GAUGE_RECOVERY_RATE); }
+                if (!document.hidden && state.mode === 'FOCUS' && state.gaugeLevel < 100) { state.gaugeLevel = Math.min(100, state.gaugeLevel + GAUGE_RECOVERY_RATE); }
 
                 // Flow state detection
                 if (state.mode === 'FOCUS' && !state.isFlowState) {
@@ -256,6 +263,30 @@
                     debugFlowBtn.addEventListener('click', () => {
                         state.gaugeLevel = 100; // Set gauge to 100 for debug
                         enterFlowState();
+                    });
+                }
+
+                // --- New Debug Code ---
+                const debugGauge0Btn = document.getElementById('debug-gauge-0');
+                const debugGauge50Btn = document.getElementById('debug-gauge-50');
+                const debugGauge100Btn = document.getElementById('debug-gauge-100');
+
+                if (debugGauge0Btn) {
+                    debugGauge0Btn.addEventListener('click', () => {
+                        state.gaugeLevel = 0;
+                        updateDisplay();
+                    });
+                }
+                if (debugGauge50Btn) {
+                    debugGauge50Btn.addEventListener('click', () => {
+                        state.gaugeLevel = 50;
+                        updateDisplay();
+                    });
+                }
+                if (debugGauge100Btn) {
+                    debugGauge100Btn.addEventListener('click', () => {
+                        state.gaugeLevel = 100;
+                        updateDisplay();
                     });
                 }
             }
