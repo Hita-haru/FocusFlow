@@ -137,19 +137,19 @@
                 if (state.mode === 'FOCUS') { finalFocusTime += (Date.now() - state.currentPhaseStartTime); }
                 const totalMinutes = Math.floor(finalFocusTime / 1000 / 60);
 
-                const confirmEnd = confirm(`${totalMinutes}分のフォーカスを記録して終了しますか？`);
-
-                if (confirmEnd) {
-                    state.isSessionActive = false;
-                    await sendUserStatusUpdate('オフライン', 0);
-                    logSession(totalMinutes);
-                } else {
-                    state.timerId = setInterval(tick, 1000);
-                    state.statusUpdateIntervalId = setInterval(() => {
-                        sendUserStatusUpdate(state.mode === 'FOCUS' ? 'フォーカス中' : '休憩中', Math.round(state.gaugeLevel));
-                    }, 5000);
-                    await toggleWakeLock(true);
-                }
+                showCustomConfirm(`${totalMinutes}分のフォーカスを記録して終了しますか？`, async (confirmed) => {
+                    if (confirmed) {
+                        state.isSessionActive = false;
+                        await sendUserStatusUpdate('オフライン', 0);
+                        logSession(totalMinutes);
+                    } else {
+                        state.timerId = setInterval(tick, 1000);
+                        state.statusUpdateIntervalId = setInterval(() => {
+                            sendUserStatusUpdate(state.mode === 'FOCUS' ? 'フォーカス中' : '休憩中', Math.round(state.gaugeLevel));
+                        }, 5000);
+                        await toggleWakeLock(true);
+                    }
+                });
             }
 
             function logSession(duration) {
@@ -160,9 +160,9 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 'success') { window.location.href = "{{ url_for('main.dashboard') }}"; }
-                    else { alert('エラー: ' + data.message); }
+                    else { showCustomAlert('エラー: ' + data.message); }
                 })
-                .catch(err => { console.error('Error:', err); alert('サーバーとの通信中にエラーが発生しました。'); });
+                .catch(err => { console.error('Error:', err); showCustomAlert('サーバーとの通信中にエラーが発生しました。'); });
             }
 
             function handleVisibilityChange() {
