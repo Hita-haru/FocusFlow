@@ -1,367 +1,202 @@
-:root {
-    --primary-color: #007aff;
-    --background-color: #1c1c1e;
-    --card-bg-color: #2c2c2e;
-    --text-color: #f2f2f7;
-    --text-secondary-color: #a0a0a5;
-    --border-color: #38383a;
-    --shadow-color: rgba(0, 0, 0, 0.2);
-    --border-radius: 12px;
-    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
-}
+/* Windows 95風 CSS - FocusFlow Edition */
 
 body {
-    font-family: var(--font-family);
-    background-color: var(--background-color);
-    color: var(--text-color);
-    margin: 0;
-    line-height: 1.7;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    background-color: #008080; /* ティールブルー */
+    font-family: "MS PGothic", "ＭＳ Ｐゴシック", sans-serif;
+    color: #000;
+    font-smooth: never;
+    -webkit-font-smoothing: none;
+    font-size: 16px;
+    line-height: 1.5;
 }
 
+h1, h2, h3, h4, h5, h6 {
+    font-weight: bold;
+}
+
+a {
+    color: #0000FF;
+    text-decoration: underline;
+}
+
+/* レイアウト */
 .main-layout {
     display: flex;
     min-height: 100vh;
 }
 
 .sidebar {
+    background-color: #c0c0c0;
+    padding: 10px;
+    border: 2px solid #c0c0c0;
+    border-right-color: #000;
+    border-bottom-color: #000;
+    border-left-color: #fff;
+    border-top-color: #fff;
+    margin: 10px;
     width: 240px;
-    background-color: var(--background-color);
-    padding: 20px;
-    border-right: 1px solid var(--border-color);
 }
 
 .container {
     flex-grow: 1;
-    padding: 40px;
+    padding: 10px;
     max-width: 960px;
     margin: 0 auto;
 }
 
 header {
-    background: linear-gradient(90deg, #2c2c2e, #1c1c1e);
-    color: white;
-    padding: 20px 40px;
-    text-align: center;
-    border-bottom: 1px solid var(--border-color);
+    background-color: #c0c0c0;
+    padding: 4px;
+    border-bottom: 2px solid #000;
+    margin-bottom: 10px;
+    color: #000;
 }
 
 header h1 {
+    background-color: #000080; /* ダークブルー */
+    color: #fff;
+    padding: 5px 10px;
     margin: 0;
-    font-size: 2.2rem;
-    font-weight: 700;
+    font-size: 20px;
+    font-weight: bold;
 }
 
 header p {
-    margin: 5px 0 0;
-    color: var(--text-secondary-color);
+    padding: 5px 10px;
+    margin: 0;
 }
 
 footer {
-    background-color: var(--background-color);
-    color: var(--text-secondary-color);
-    padding: 20px;
+    background-color: #c0c0c0;
+    padding: 5px;
     text-align: center;
-    border-top: 1px solid var(--border-color);
-    font-size: 0.9rem;
+    border-top: 2px solid #fff;
+    margin-top: 10px;
 }
 
-.sidebar h3 {
-    margin-top: 0;
-    color: var(--text-color);
-    font-size: 1.1rem;
-    font-weight: 600;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.sidebar ul {
-    list-style: none;
-    padding: 0;
-    margin-top: 20px;
-}
-
-.sidebar ul li a {
-    display: block;
-    padding: 12px 15px;
-    color: var(--text-secondary-color);
-    text-decoration: none;
-    border-radius: 8px;
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.sidebar ul li a:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: var(--text-color);
-}
-
+/* カード (ウィンドウ) */
 .card {
-    background-color: var(--card-bg-color);
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border-color);
-    box-shadow: 0 2px 8px var(--shadow-color);
-    padding: 30px;
-    margin-bottom: 30px;
-    transition: border-color 0.3s, transform 0.3s;
+    background-color: #c0c0c0;
+    border: 2px solid #c0c0c0;
+    border-right-color: #000;
+    border-bottom-color: #000;
+    border-left-color: #fff;
+    border-top-color: #fff;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: none;
+    border-radius: 0;
 }
 
-.card:hover {
-    transform: translateY(-3px);
-    border-color: rgba(0, 122, 255, 0.5);
+.card h2 {
+    margin: 0 0 10px 0;
+    padding: 2px 5px;
+    background-color: #000080;
+    color: #fff;
+    font-size: 16px;
 }
 
-.flow-state {
-    border-color: #ff00ff;
-    box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
-}
-
-h1, h2, h3, h4, h5, h6 {
-    font-weight: 700;
-    margin-bottom: 0.75em;
-    color: var(--text-color);
-}
-
-h2 {
-    font-size: 1.8rem;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 0.5em;
-}
-
-h3 {
-    font-size: 1.4rem;
-}
-
-p {
-    margin-top: 0;
-    color: var(--text-secondary-color);
-}
-
-a {
-    color: var(--primary-color);
-    text-decoration: none;
-    transition: color 0.2s;
-}
-
-a:hover {
-    color: #409cff;
-    text-decoration: none;
-}
-
+/* ボタン */
 .btn {
-    display: inline-block;
-    padding: 12px 24px;
-    border: 1px solid transparent;
-    border-radius: 8px;
+    border: 2px solid #c0c0c0;
+    border-right-color: #000;
+    border-bottom-color: #000;
+    border-left-color: #fff;
+    border-top-color: #fff;
+    background-color: #c0c0c0;
+    padding: 5px 15px;
+    font-size: 16px;
     cursor: pointer;
-    font-size: 1rem;
-    font-weight: 600;
-    text-align: center;
     text-decoration: none;
-    transition: all 0.2s ease-in-out;
-    margin-right: 10px;
+    color: #000;
+    border-radius: 0;
+    margin-right: 5px;
 }
 
-.btn:hover {
-    transform: translateY(-2px);
-    filter: brightness(1.1);
+.btn:active, .btn:focus {
+    border-right-color: #fff;
+    border-bottom-color: #fff;
+    border-left-color: #000;
+    border-top-color: #000;
+    outline: 1px dotted #000;
+    outline-offset: -4px;
 }
 
 .btn-primary {
-    background-color: var(--primary-color);
-    color: white;
+    font-weight: bold;
+    border: 2px solid #000;
+    border-right-color: #fff;
+    border-bottom-color: #fff;
 }
 
 .btn-secondary {
-    background-color: #3a3a3c;
-    color: var(--text-color);
-    border-color: #545458;
+    /* 標準ボタンと同じ */
 }
 
-.btn-secondary:hover {
-    background-color: #4a4a4c;
+.btn-danger {
+    /* Win95に危険ボタンはないが、それっぽく */
+    background-color: #ff4136;
+    color: #fff;
 }
 
-.btn-text {
-    background-color: transparent;
-    color: var(--primary-color);
-}
-
-.btn-text:hover {
-    background-color: rgba(0, 122, 255, 0.1);
-    transform: none;
-    filter: none;
-}
-
+/* フォーム */
 .form-group {
-    margin-bottom: 25px;
+    margin-bottom: 15px;
 }
 
 .form-label {
     display: block;
-    font-weight: 600;
-    margin-bottom: 10px;
-    font-size: 0.9rem;
-    color: var(--text-secondary-color);
+    margin-bottom: 5px;
 }
 
 .form-control {
-    width: 100%;
-    padding: 14px;
-    font-size: 1rem;
-    background-color: #3a3a3c;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    box-sizing: border-box;
-    color: var(--text-color);
-    transition: border-color 0.3s, box-shadow 0.3s;
+    width: calc(100% - 12px);
+    padding: 5px;
+    border: 2px inset #808080;
+    background-color: #fff;
+    font-size: 16px;
+    box-sizing: content-box;
+    border-radius: 0;
 }
 
-.form-control:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3);
+textarea.form-control {
+    resize: none;
 }
 
-@media (max-width: 768px) {
-    .main-layout {
-        flex-direction: column;
-    }
-
-    .sidebar {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .container {
-        padding: 20px;
-    }
-
-    header, footer {
-        padding: 20px;
-    }
-}
-
-.checkbox-container {
-  display: block;
-  position: relative;
-  padding-left: 35px;
-  margin-bottom: 15px;
-  cursor: pointer;
-  font-size: 1rem;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  color: var(--text-secondary-color);
-}
-
-.checkbox-container input {
-  position: absolute;
-  opacity: 0;
-  cursor: pointer;
-  height: 0;
-  width: 0;
-}
-
-.checkmark {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 24px;
-  width: 24px;
-  background-color: #3a3a3c;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  transition: background-color 0.2s, border-color 0.2s;
-}
-
-.checkbox-container:hover input ~ .checkmark {
-  background-color: #4a4a4c;
-}
-
-.checkbox-container input:checked ~ .checkmark {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-}
-
-.checkmark:after {
-  content: "";
-  position: absolute;
-  display: none;
-}
-
-.checkbox-container input:checked ~ .checkmark:after {
-  display: block;
-}
-
-.checkmark:after {
-  left: 8px;
-  top: 4px;
-  width: 6px;
-  height: 12px;
-  border: solid var(--text-color);
-  border-width: 0 3px 3px 0;
-  -webkit-transform: rotate(45deg);
-  -ms-transform: rotate(45deg);
-  transform: rotate(45deg);
-}
-
-.flash {
-    list-style: none;
-    padding: 15px 20px;
-    margin-bottom: 20px;
-    border-radius: var(--border-radius);
-    background-color: #3a3a3c;
-    border: 1px solid var(--border-color);
-    color: var(--text-color);
-    font-size: 0.95rem;
-}
-
-.flash li {
-    margin: 0;
-    padding: 0;
-}
-
+/* テーブル */
 .table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
-    background-color: var(--card-bg-color);
-    border-radius: var(--border-radius);
-    overflow: hidden;
+    background-color: #fff;
+    border: 2px inset #808080;
 }
 
-.table th,
-.table td {
-    padding: 15px;
+.table th, .table td {
+    padding: 5px;
     text-align: left;
-    border-bottom: 1px solid var(--border-color);
+    border: 1px solid #808080;
 }
 
 .table th {
-    background-color: #3a3a3c;
-    color: var(--text-color);
-    font-weight: 600;
-    font-size: 0.9rem;
-    text-transform: uppercase;
+    background-color: #c0c0c0;
+    font-weight: bold;
+    border-bottom: 2px solid #808080;
 }
 
-.table tbody tr:last-child td {
-    border-bottom: none;
+/* フラッシュメッセージ */
+.flash {
+    list-style: none;
+    padding: 15px;
+    margin-bottom: 20px;
+    background-color: #c0c0c0;
+    border: 2px solid #c0c0c0;
+    border-right-color: #000;
+    border-bottom-color: #000;
+    border-left-color: #fff;
+    border-top-color: #fff;
 }
 
-.table tbody tr:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-}
-
-.table-responsive {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-/* Modal Styles */
+/* モーダル */
 .modal {
     display: none;
     position: fixed;
@@ -370,34 +205,95 @@ a:hover {
     top: 0;
     width: 100%;
     height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.6);
+    background-color: rgba(0,0,0,0.4);
 }
 
 .modal-content {
-    background-color: var(--card-bg-color);
-    margin: 15% auto;
-    padding: 30px;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
+    background-color: #c0c0c0;
+    border: 2px solid #c0c0c0;
+    border-right-color: #000;
+    border-bottom-color: #000;
+    border-left-color: #fff;
+    border-top-color: #fff;
     width: 80%;
     max-width: 400px;
-    text-align: center;
+    margin: 15% auto;
+    padding: 1px;
     position: relative;
 }
 
-.close-btn {
-    color: var(--text-secondary-color);
-    position: absolute;
-    top: 15px;
-    right: 25px;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
+.modal-content p {
+    padding: 20px;
+    margin: 0;
 }
 
-.close-btn:hover,
-.close-btn:focus {
-    color: var(--text-color);
-    text-decoration: none;
+.close-btn {
+    float: right;
+    width: 16px;
+    height: 16px;
+    background-color: #c0c0c0;
+    border: 1px solid #000;
+    text-align: center;
+    line-height: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 2px;
+}
+
+/* チェックボックス */
+.checkbox-container {
+    display: inline-flex;
+    align-items: center;
+}
+
+.checkmark {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px inset #808080;
+    background-color: #fff;
+    margin-right: 5px;
+    position: relative;
+}
+
+.checkbox-container input:checked + .checkmark:after {
+    content: "✓";
+    position: absolute;
+    left: 1px;
+    top: -2px;
+    font-size: 16px;
+}
+
+.checkbox-container input {
+    display: none;
+}
+
+/* プログレスバー */
+.progress {
+    height: 20px;
+    border: 2px inset #808080;
+    padding: 1px;
+    background-color: #c0c0c0;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: #000080; /* ダークブルー */
+    color: #fff;
+    text-align: center;
+    line-height: 20px;
+}
+
+/* その他 */
+.list-group-item {
+    border: 1px solid #808080;
+    padding: 10px;
+    margin-bottom: -1px; /* ボーダーを重ねる */
+    background-color: #c0c0c0;
+}
+
+.badge {
+    background-color: #808080;
+    color: #fff;
+    padding: 2px 5px;
 }
