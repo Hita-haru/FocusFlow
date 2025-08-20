@@ -240,3 +240,13 @@ def join_room(room_id):
     
     return render_template('enter_room_password.html', room=room)
 
+@main.route('/room/<int:room_id>/leave')
+@login_required
+def leave_room(room_id):
+    room = FocusRoom.query.get_or_404(room_id)
+    if current_user in room.participants:
+        room.participants.remove(current_user)
+        db.session.commit()
+        flash(f'ルーム「{room.name}」から脱退しました。', 'success')
+    return redirect(url_for('main.rooms'))
+

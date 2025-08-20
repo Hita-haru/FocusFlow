@@ -13,7 +13,11 @@
                 <h5>{{ room.name }}</h5>
                 <small class="badge bg-secondary">作成者: {{ room.owner.username }} | 参加者: {{ room.participants.count() }}人</small>
             </div>
-            <a href="{{ url_for('main.join_room', room_id=room.id) }}" class="btn btn-secondary">参加する</a>
+            {% if current_user in room.participants %}
+                <a href="{{ url_for('main.room', room_id=room.id) }}" class="btn btn-primary">ルームに入る</a>
+            {% else %}
+                <a href="{{ url_for('main.join_room', room_id=room.id) }}" class="btn btn-secondary">参加する</a>
+            {% endif %}
         </li>
         {% else %}
         <li class="list-group-item">現在、公開中のルームはありません。</li>

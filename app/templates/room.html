@@ -35,6 +35,7 @@
     <div class="share-buttons" style="margin-top: 20px;">
         <button id="share-btn" class="btn btn-secondary">ルームを共有</button>
         <button id="qr-code-btn" class="btn btn-secondary">QRコードを表示</button>
+        <a href="{{ url_for('main.leave_room', room_id=room.id) }}" class="btn btn-danger">ルームを脱退する</a>
     </div>
 
     <hr>
