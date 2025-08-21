@@ -46,22 +46,36 @@
 		<h3>フォロー中 ({{ user.followed.count() }})</h3>
 		<div class="list-group">
 			{% for followed_user in user.followed %}
-				<a href="{{ url_for('main.user', username=followed_user.username) }}" class="list-group-item list-group-item-action" style="display: block; padding: 10px; margin-bottom: 5px; border: 1px solid var(--border-color); border-radius: 8px; text-decoration: none; color: var(--text-color);">{{ followed_user.username }}</a>
+				<a href="{{ url_for('main.user', username=followed_user.username) }}" 
+				   class="list-group-item list-group-item-action collapsible-following-item" 
+				   style="display: {% if loop.index > 5 %}'none'{% else %}'block'{% endif %}; padding: 10px; margin-bottom: 5px; border: 1px solid var(--border-color); border-radius: 8px; text-decoration: none; color: var(--text-color);">
+				   {{ followed_user.username }}
+				</a>
 			{% else %}
 				<p>誰もフォローしていません。</p>
 			{% endfor %}
 		</div>
+		{% if user.followed.count() > 5 %}
+			<button class="btn btn-text" id="toggle-following-btn" style="margin-top: 10px;">もっと見る (残り{{ user.followed.count() - 5 }}人)</button>
+		{% endif %}
 	</section>
 
 	<section class="card">
 		<h3>フォロワー ({{ user.followers.count() }})</h3>
 		<div class="list-group">
 			{% for follower in user.followers %}
-				<a href="{{ url_for('main.user', username=follower.username) }}" class="list-group-item list-group-item-action" style="display: block; padding: 10px; margin-bottom: 5px; border: 1px solid var(--border-color); border-radius: 8px; text-decoration: none; color: var(--text-color);">{{ follower.username }}</a>
+				<a href="{{ url_for('main.user', username=follower.username) }}" 
+				   class="list-group-item list-group-item-action collapsible-follower-item" 
+				   style="display: {% if loop.index > 5 %}'none'{% else %}'block'{% endif %}; padding: 10px; margin-bottom: 5px; border: 1px solid var(--border-color); border-radius: 8px; text-decoration: none; color: var(--text-color);">
+				   {{ follower.username }}
+				</a>
 			{% else %}
 				<p>フォロワーはいません。</p>
 			{% endfor %}
 		</div>
+		{% if user.followers.count() > 5 %}
+			<button class="btn btn-text" id="toggle-followers-btn" style="margin-top: 10px;">もっと見る (残り{{ user.followers.count() - 5 }}人)</button>
+		{% endif %}
 	</section>
 
 	<section class="card">
@@ -144,6 +158,25 @@
 
 			// 5秒ごとに更新
 			setInterval(fetchAndUpdateProfileStatus, 5000);
+
+			function setupToggler(buttonId, itemClass, totalCount) {
+				const toggleBtn = document.getElementById(buttonId);
+				if (!toggleBtn) return;
+
+				toggleBtn.addEventListener('click', () => {
+					const listItems = document.querySelectorAll(itemClass);
+					const isHidden = toggleBtn.textContent.includes('もっと見る');
+
+					for (let i = 5; i < listItems.length; i++) {
+						listItems[i].style.display = isHidden ? 'block' : 'none';
+					}
+
+					toggleBtn.textContent = isHidden ? '折りたたむ' : `もっと見る (残り${totalCount - 5}人)`;
+				});
+			}
+
+			setupToggler('toggle-following-btn', '.collapsible-following-item', {{ user.followed.count() }});
+			setupToggler('toggle-followers-btn', '.collapsible-follower-item', {{ user.followers.count() }});
 		});
 	</script>
 
