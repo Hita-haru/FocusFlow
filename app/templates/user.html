@@ -43,6 +43,28 @@
 	</section>
 
 	<section class="card">
+		<h3>フォロー中 ({{ user.followed.count() }})</h3>
+		<div class="list-group">
+			{% for followed_user in user.followed %}
+				<a href="{{ url_for('main.user', username=followed_user.username) }}" class="list-group-item list-group-item-action" style="display: block; padding: 10px; margin-bottom: 5px; border: 1px solid var(--border-color); border-radius: 8px; text-decoration: none; color: var(--text-color);">{{ followed_user.username }}</a>
+			{% else %}
+				<p>誰もフォローしていません。</p>
+			{% endfor %}
+		</div>
+	</section>
+
+	<section class="card">
+		<h3>フォロワー ({{ user.followers.count() }})</h3>
+		<div class="list-group">
+			{% for follower in user.followers %}
+				<a href="{{ url_for('main.user', username=follower.username) }}" class="list-group-item list-group-item-action" style="display: block; padding: 10px; margin-bottom: 5px; border: 1px solid var(--border-color); border-radius: 8px; text-decoration: none; color: var(--text-color);">{{ follower.username }}</a>
+			{% else %}
+				<p>フォロワーはいません。</p>
+			{% endfor %}
+		</div>
+	</section>
+
+	<section class="card">
 		<h3>{{ user.username }}さんのフォーカス履歴</h3>
 		<table class="table">
 			<thead>
