@@ -40,3 +40,20 @@ def on_update_status(data):
         'status': current_user.status,
         'gauge_level': current_user.current_gauge_level
     }, to=room_id, include_self=False)
+
+@socketio.on('room_chat')
+def on_room_chat(data):
+    room_id = data.get('room_id')
+    msg = data.get('msg', '').strip()
+    room = FocusRoom.query.get(room_id)
+
+    if not msg or len(msg) > 5:
+        return # メッセージが空または5文字を超えていれば無視
+
+    if room is None or current_user not in room.participants:
+        return # ルームが存在しないか、ユーザーが参加者でなければ無視
+
+    emit('new_chat_message', {
+        'username': current_user.username,
+        'msg': msg
+    }, to=room_id)

@@ -22,7 +22,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(100), nullable=False)
     password_hash = db.Column(db.String(128))
     sessions = db.relationship('FocusSession', backref='author', lazy=True)
-    flow_state_logs = db.relationship('FlowStateLog', backref='user', lazy=True)
+    activity_logs = db.relationship('ActivityLog', backref='user', lazy=True)
     status = db.Column(db.String(50), default='オフライン')
     current_gauge_level = db.Column(db.Integer, default=0)
 
@@ -68,10 +68,6 @@ class User(UserMixin, db.Model):
     def total_focus_time(self):
         return db.session.query(db.func.sum(FocusSession.duration_minutes)).filter(FocusSession.user_id == self.id).scalar() or 0
 
-    @property
-    def flow_state_count(self):
-        return FlowStateLog.query.filter_by(user_id=self.id).count()
-
 
 class FocusSession(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -80,10 +76,12 @@ class FocusSession(db.Model):
     timestamp = db.Column(db.DateTime, server_default=db.func.now())
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-class FlowStateLog(db.Model):
+class ActivityLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, server_default=db.func.now())
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    activity_type = db.Column(db.String(50), nullable=False)  #例: 'session_start', 'session_end', 'flow_state'
+    details = db.Column(db.String(200), nullable=True) #例: タスク名や時間
+    timestamp = db.Column(db.DateTime, server_default=db.func.now())
 
 class FocusRoom(db.Model):
     id = db.Column(db.Integer, primary_key=True)

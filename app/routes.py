@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
-from .models import User, FocusSession, FlowStateLog, FocusRoom
+from .models import User, FocusSession, ActivityLog, FocusRoom
 from . import db
 from sqlalchemy import func
 from datetime import date, timedelta, datetime
@@ -66,8 +66,8 @@ def logout():
 def dashboard():
     my_sessions = FocusSession.query.filter_by(user_id=current_user.id).order_by(FocusSession.timestamp.desc()).all()
     followed_users_ids = [user.id for user in current_user.followed]
-    followed_flow_logs = FlowStateLog.query.filter(FlowStateLog.user_id.in_(followed_users_ids)).order_by(FlowStateLog.timestamp.desc()).all()
-    return render_template('dashboard.html', username=current_user.username, my_sessions=my_sessions, followed_flow_logs=followed_flow_logs)
+    followed_activity_logs = ActivityLog.query.filter(ActivityLog.user_id.in_(followed_users_ids)).order_by(ActivityLog.timestamp.desc()).all()
+    return render_template('dashboard.html', username=current_user.username, my_sessions=my_sessions, followed_activity_logs=followed_activity_logs)
 
 @main.route('/report')
 @login_required
@@ -75,7 +75,7 @@ def report():
     # --- 総合統計 ---
     total_focus_time = db.session.query(func.sum(FocusSession.duration_minutes)).filter(FocusSession.user_id == current_user.id).scalar() or 0
     total_sessions = FocusSession.query.filter_by(user_id=current_user.id).count()
-    total_flow_states = FlowStateLog.query.filter_by(user_id=current_user.id).count()
+    total_flow_states = ActivityLog.query.filter_by(user_id=current_user.id, activity_type='flow_state').count()
     avg_session_length = round(total_focus_time / total_sessions, 1) if total_sessions > 0 else 0
 
     # --- グラフデータ (直近7日間) ---
@@ -97,7 +97,7 @@ def report():
         my_daily_total = db.session.query(func.sum(FocusSession.duration_minutes)).filter(FocusSession.user_id == current_user.id, FocusSession.timestamp.between(start_of_day, end_of_day)).scalar() or 0
         my_chart_data.append(my_daily_total)
 
-        my_daily_flow_count = FlowStateLog.query.filter(FlowStateLog.user_id == current_user.id, FlowStateLog.timestamp.between(start_of_day, end_of_day)).count()
+        my_daily_flow_count = ActivityLog.query.filter(ActivityLog.user_id == current_user.id, ActivityLog.activity_type == 'flow_state', ActivityLog.timestamp.between(start_of_day, end_of_day)).count()
         flow_chart_data.append(my_daily_flow_count)
 
         if num_followed > 0:
@@ -270,7 +270,10 @@ def log_session():
 		author=current_user
 		)
 	db.session.add(new_session)
-	db.session.commit()
+
+	# アクティビティログに記録
+	activity = ActivityLog(user_id=current_user.id, activity_type='session_end', details=f'{task_name}|{int(duration_minutes)}')
+	db.session.add(activity)
 
 	current_user.status = 'オフライン'
 	current_user.current_gauge_level = 0
@@ -298,7 +301,25 @@ def update_user_status():
 @main.route('/flow_state_achieved', methods=['POST'])
 @login_required
 def flow_state_achieved():
-    log = FlowStateLog(user_id=current_user.id)
+    log = ActivityLog(user_id=current_user.id, activity_type='flow_state')
+    db.session.add(log)
+    db.session.commit()
+    return jsonify({'status': 'success'})
+
+@main.route('/log_activity', methods=['POST'])
+@login_required
+def log_activity():
+    data = request.get_json()
+    activity_type = data.get('activity_type')
+    details = data.get('details')
+    if not activity_type:
+        return jsonify({'status': 'error', 'message': 'Activity type not provided'}), 400
+    
+    log = ActivityLog(
+        user_id=current_user.id,
+        activity_type=activity_type,
+        details=details
+    )
     db.session.add(log)
     db.session.commit()
     return jsonify({'status': 'success'})

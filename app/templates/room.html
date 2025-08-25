@@ -27,6 +27,24 @@
         border: 1px solid var(--border-color);
         border-radius: var(--border-radius);
     }
+    #chat-messages {
+        height: 200px;
+        overflow-y: auto;
+        border: 1px solid var(--border-color);
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: var(--border-radius);
+    }
+    .chat-message {
+        margin-bottom: 5px;
+    }
+    #chat-form {
+        display: flex;
+    }
+    #chat-input {
+        flex-grow: 1;
+        margin-right: 10px;
+    }
 </style>
 <div class="card">
     <h2>{{ room.name }}</h2>
@@ -54,9 +72,19 @@
         {% endfor %}
     </div>
 </div>
+
 <div class="card mt-4">
-    <h4>ルームメッセージ</h4>
-    <div id="messages" style="height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></div>
+    <h4>チャット</h4>
+    <div id="chat-messages"></div>
+    <form id="chat-form">
+        <input type="text" id="chat-input" class="form-control" placeholder="メッセージを入力 (5文字以内)" maxlength="5" autocomplete="off">
+        <button type="submit" class="btn btn-primary">送信</button>
+    </form>
+</div>
+
+<div class="card mt-4">
+    <h4>システムメッセージ</h4>
+    <div id="messages" style="height: 100px; overflow-y: scroll; border: 1px solid var(--border-color); padding: 10px; border-radius: var(--border-radius);"></div>
 </div>
 
 <!-- QR Code Modal -->
@@ -95,13 +123,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const socket = io();
     const roomId = "{{ room.id }}";
 
+    // --- Socket.IO イベントリスナー ---
     socket.on('connect', () => {
         socket.emit('join', { room_id: roomId });
     });
 
     socket.on('room_message', (data) => {
         const messages = document.getElementById('messages');
-        messages.innerHTML += `<p>${data.msg}</p>`;
+        messages.innerHTML += `<p class="chat-message"><em>${data.msg}</em></p>`;
         messages.scrollTop = messages.scrollHeight;
     });
 
@@ -116,8 +145,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    socket.on('new_chat_message', (data) => {
+        const chatMessages = document.getElementById('chat-messages');
+        const msgElement = document.createElement('p');
+        msgElement.classList.add('chat-message');
+        msgElement.innerHTML = `<strong>${data.username}:</strong> ${data.msg}`;
+        chatMessages.appendChild(msgElement);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
+
     window.addEventListener('beforeunload', () => {
         socket.emit('leave', { room_id: roomId });
+    });
+
+    // --- チャットフォームのロジック ---
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+    chatForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const msg = chatInput.value.trim();
+        if (msg) {
+            socket.emit('room_chat', { room_id: roomId, msg: msg });
+            chatInput.value = '';
+        }
     });
 
     // --- 共有ボタンのロジック ---

@@ -272,6 +272,14 @@
                     state.statusUpdateIntervalId = setInterval(() => { if (!state.isFlowState) sendUserStatusUpdate(state.mode === 'FOCUS' ? 'フォーカス中' : '休憩中', Math.round(state.gaugeLevel)); }, 5000);
                     tick();
                     elements.endSessionBtn.addEventListener('click', endSession);
+
+                    // Log session start activity
+                    fetch("{{ url_for('main.log_activity') }}", {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ activity_type: 'session_start', details: taskName })
+                    });
+
                 } catch (err) {
                     console.error("Initialization failed:", err);
                 }

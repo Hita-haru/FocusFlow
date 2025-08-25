@@ -57,10 +57,21 @@
                 </tr>
             </thead>
             <tbody>
-                {% for log in followed_flow_logs %}
+                {% for log in followed_activity_logs %}
                 <tr>
                     <td><a href="{{ url_for('main.user', username=log.user.username) }}">{{ log.user.username }}</a></td>
-                    <td>フロー状態に入りました</td>
+                    <td>
+                        {% if log.activity_type == 'session_start' %}
+                            「{{ log.details }}」のフォーカスを開始しました
+                        {% elif log.activity_type == 'session_end' %}
+                            {% set parts = log.details.split('|') %}
+                            「{{ parts[0] }}」のフォーカスを {{ parts[1] }} 分間行いました
+                        {% elif log.activity_type == 'flow_state' %}
+                            フロー状態に入りました
+                        {% else %}
+                            新しいアクティビティ
+                        {% endif %}
+                    </td>
                     <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
                 </tr>
                 {% else %}
