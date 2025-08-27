@@ -255,13 +255,23 @@ def unfollow(username):
 @main.route('/leaderboard')
 @login_required
 def leaderboard():
+    # ユーザー週間ランキング
     users = User.query.all()
-    users.sort(key=lambda x: x.total_focus_time, reverse=True)
+    for user in users:
+        user.weekly_focus = user.weekly_focus_time()
+    users.sort(key=lambda x: x.weekly_focus, reverse=True)
     try:
         user_rank = users.index(current_user) + 1
     except ValueError:
         user_rank = None
-    return render_template('leaderboard.html', users=users, user_rank=user_rank)
+
+    # ルーム週間ランキング
+    rooms = FocusRoom.query.all()
+    for room in rooms:
+        room.weekly_focus = room.weekly_focus_time
+    rooms.sort(key=lambda x: x.weekly_focus, reverse=True)
+
+    return render_template('leaderboard.html', users=users, user_rank=user_rank, rooms=rooms)
 
 @main.route('/log_session', methods=['POST'])
 @login_required

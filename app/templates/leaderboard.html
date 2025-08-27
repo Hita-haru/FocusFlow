@@ -1,17 +1,20 @@
 {% extends "base.html" %}
 
-{% block title %}リーダーボード{% endblock %}
+{% block title %}週間リーダーボード{% endblock %}
 
 {% block content %}
 <div class="container">
-    <h1 class="my-4">リーダーボード</h1>
+    <h1 class="my-4">週間リーダーボード</h1>
+
+    <!-- ユーザーランキング -->
+    <h2 class="my-4">ユーザーランキング</h2>
     <div class="table-responsive">
         <table class="table">
             <thead>
                 <tr>
                     <th>順位</th>
                     <th>ユーザー</th>
-                    <th>合計集中時間</th>
+                    <th>週間集中時間</th>
                 </tr>
             </thead>
             <tbody>
@@ -19,7 +22,7 @@
                 <tr>
                     <td>{{ loop.index }}</td>
                     <td><a href="{{ url_for('main.user', username=user.username) }}">{{ user.username }}</a></td>
-                    <td>{{ user.total_focus_time }} 分</td>
+                    <td>{{ user.weekly_focus }} 分</td>
                 </tr>
                 {% else %}
                 <tr>
@@ -31,12 +34,39 @@
     </div>
     <br>
     {% if user_rank %}
-    <div class="card mt-5">
+    <div class="card mt-4">
         <div class="card-body">
             <h5 class="card-title">自分の順位</h5>
-            <p class="card-text">あなたは現在 {{ user_rank }} 位です。</p>
+            <p class="card-text">あなたは今週 {{ user_rank }} 位です。</p>
         </div>
     </div>
     {% endif %}
+
+    <!-- ルームランキング -->
+    <h2 class="my-4">フォーカスルームランキング</h2>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>順位</th>
+                    <th>ルーム</th>
+                    <th>週間合計集中時間</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for room in rooms %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><a href="{{ url_for('main.room', room_id=room.id) }}">{{ room.name }}</a></td>
+                    <td>{{ room.weekly_focus }} 分</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3">まだデータがありません。</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}

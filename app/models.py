@@ -1,6 +1,7 @@
 from flask_login import UserMixin
 from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import date, timedelta, datetime
 
 # 中間テーブルは、それを使用するクラスよりも前に定義する必要があります
 
@@ -68,6 +69,15 @@ class User(UserMixin, db.Model):
     def total_focus_time(self):
         return db.session.query(db.func.sum(FocusSession.duration_minutes)).filter(FocusSession.user_id == self.id).scalar() or 0
 
+    def weekly_focus_time(self):
+        today = date.today()
+        start_of_week = today - timedelta(days=today.weekday())
+        start_of_week_dt = datetime.combine(start_of_week, datetime.min.time())
+        return db.session.query(db.func.sum(FocusSession.duration_minutes)).filter(
+            FocusSession.user_id == self.id,
+            FocusSession.timestamp >= start_of_week_dt
+        ).scalar() or 0
+
 
 class FocusSession(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -98,3 +108,19 @@ class FocusRoom(db.Model):
         if self.password_hash is None:
             return False
         return check_password_hash(self.password_hash, password)
+
+    @property
+    def weekly_focus_time(self):
+        today = date.today()
+        start_of_week = today - timedelta(days=today.weekday())
+        start_of_week_dt = datetime.combine(start_of_week, datetime.min.time())
+
+        user_ids = [user.id for user in self.participants]
+
+        if not user_ids:
+            return 0
+
+        return db.session.query(db.func.sum(FocusSession.duration_minutes)).filter(
+            FocusSession.user_id.in_(user_ids),
+            FocusSession.timestamp >= start_of_week_dt
+        ).scalar() or 0
