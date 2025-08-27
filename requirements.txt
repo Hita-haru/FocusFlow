@@ -58,7 +58,6 @@ protobuf==5.29.5
 psycopg2==2.8.6
 pycparser==2.22
 Pygments==2.19.1
-PyICU==2.5
 pyinotify==0.9.6
 pyOpenSSL==25.1.0
 pyparsing==3.2.3
