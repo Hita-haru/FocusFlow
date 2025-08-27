@@ -76,7 +76,6 @@ simplejson==3.17.2
 six==1.17.0
 SQLAlchemy==2.0.43
 sqlparse==0.5.3
-systemd-python==234
 tensorboard==2.19.0
 tensorboard-data-server==0.7.2
 termcolor==3.1.0
