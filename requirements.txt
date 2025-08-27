@@ -49,7 +49,6 @@ mdurl==0.1.2
 ml_dtypes==0.5.1
 namex==0.1.0
 npm==0.1.1
-numpy==2.0.2
 opt_einsum==3.4.0
 optional-django==0.1.0
 optree==0.16.0
