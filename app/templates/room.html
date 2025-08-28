@@ -22,10 +22,19 @@
     }
 
     .participant-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 15px;
-        padding: 10px;
+        padding: 15px;
         border: 1px solid var(--border-color);
         border-radius: var(--border-radius);
+    }
+    .participant-info {
+        flex-grow: 1;
+    }
+    .participant-actions {
+        margin-left: 15px;
     }
     #chat-messages {
         height: 200px;
@@ -60,8 +69,8 @@
     <h4>参加者</h4>
     <div id="participants-list">
         {% for user in room.participants %}
-        <div id="user-{{ user.username }}" class="participant-card d-flex justify-content-between align-items-center">
-            <div>
+        <div id="user-{{ user.username }}" class="participant-card">
+            <div class="participant-info">
                 <strong>{{ user.username }}</strong>
                 <p class="mb-0">ステータス: <span class="status">{{ user.status }}</span></p>
                 <div class="progress">
@@ -71,7 +80,9 @@
                 </div>
             </div>
             {% if current_user == room.owner and user != room.owner %}
-            <a href="#" onclick="confirmKick('{{ url_for('main.kick_user', room_id=room.id, user_id=user.id) }}', '{{ user.username }}')" class="btn btn-danger btn-sm">脱退させる</a>
+            <div class="participant-actions">
+                <a href="#" onclick="confirmKick('{{ url_for('main.kick_user', room_id=room.id, user_id=user.id) }}', '{{ user.username }}')" class="btn btn-danger btn-sm">脱退させる</a>
+            </div>
             {% endif %}
         </div>
         {% endfor %}

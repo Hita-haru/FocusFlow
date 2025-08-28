@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}フォーカスルーム一覧{% endblock %}
+{% block title %}フォーカスルーム検索{% endblock %}
 
 {% block content %}
 <div class="card">
-    <h2>フォーカスルーム一覧</h2>
+    <h2>フォーカスルーム検索</h2>
     <a href="{{ url_for('main.create_room') }}" class="btn btn-primary mb-3">新しいルームを作成する</a>
     <ul class="list-group">
         {% for room in rooms %}

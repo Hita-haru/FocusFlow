@@ -352,6 +352,12 @@ def rooms():
     public_rooms = FocusRoom.query.filter_by(is_public=True).all()
     return render_template('rooms.html', rooms=public_rooms)
 
+@main.route('/my_rooms')
+@login_required
+def my_rooms():
+    rooms = current_user.joined_rooms.all()
+    return render_template('my_rooms.html', rooms=rooms)
+
 @main.route('/create_room', methods=['GET','POST'])
 @login_required
 def create_room():

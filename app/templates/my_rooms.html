@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}参加中のルーム{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>参加中のルーム一覧</h2>
+    {% if rooms %}
+    <ul class="list-group">
+        {% for room in rooms %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                <h5><a href="{{ url_for('main.room', room_id=room.id) }}">{{ room.name }}</a></h5>
+                <small class="badge bg-secondary">作成者: {{ room.owner.username }} | 参加者: {{ room.participants.count() }}人</small>
+            </div>
+            <a href="{{ url_for('main.room', room_id=room.id) }}" class="btn btn-primary">ルームに入る</a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>現在、参加しているルームはありません。</p>
+    <a href="{{ url_for('main.rooms') }}" class="btn btn-secondary">公開ルームを探す</a>
+    {% endif %}
+</div>
+{% endblock %}

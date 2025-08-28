@@ -19,7 +19,8 @@
                     {% if current_user.is_authenticated %}
                         <li><a href="{{url_for('main.dashboard')}}">ダッシュボード</a></li>
                         <li><a href="{{url_for('main.report')}}">フォーカスレポート</a></li>
-                        <li><a href="{{url_for('main.rooms')}}">フォーカスルーム</a></li>
+                        <li><a href="{{url_for('main.rooms')}}">フォーカスルーム検索</a></li>
+                        <li><a href="{{url_for('main.my_rooms')}}">参加中のルーム</a></li>
                         <li><a href="{{url_for('main.leaderboard')}}">リーダーボード</a></li>
                         <li><a href="{{url_for('main.user', username=current_user.username)}}">自分のプロフィール</a></li>
                         <li><a href="{{url_for('main.logout')}}">ログアウト</a></li>
