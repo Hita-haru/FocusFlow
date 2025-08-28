@@ -419,3 +419,38 @@ def leave_room(room_id):
         db.session.commit()
         flash(f'ルーム「{room.name}」から脱退しました。', 'success')
     return redirect(url_for('main.rooms'))
+
+@main.route('/room/<int:room_id>/kick/<int:user_id>')
+@login_required
+def kick_user(room_id, user_id):
+    room = FocusRoom.query.get_or_404(room_id)
+    if current_user != room.owner:
+        flash('あなたはこのルームの管理者ではありません。', 'error')
+        return redirect(url_for('main.room', room_id=room.id))
+
+    user_to_kick = User.query.get_or_404(user_id)
+    if user_to_kick not in room.participants:
+        flash('そのユーザーはこのルームに参加していません。', 'error')
+        return redirect(url_for('main.room', room_id=room.id))
+
+    if user_to_kick == room.owner:
+        flash('ルームの管理者をキックすることはできません。', 'error')
+        return redirect(url_for('main.room', room_id=room.id))
+
+    room.participants.remove(user_to_kick)
+    db.session.commit()
+    flash(f'{user_to_kick.username}をルームからキックしました。', 'success')
+    return redirect(url_for('main.room', room_id=room.id))
+
+@main.route('/room/<int:room_id>/delete', methods=['POST'])
+@login_required
+def delete_room_route(room_id):
+    room = FocusRoom.query.get_or_404(room_id)
+    if current_user != room.owner:
+        flash('あなたはこのルームの管理者ではありません。', 'error')
+        return redirect(url_for('main.room', room_id=room.id))
+
+    db.session.delete(room)
+    db.session.commit()
+    flash(f'ルーム「{room.name}」を削除しました。', 'success')
+    return redirect(url_for('main.rooms'))

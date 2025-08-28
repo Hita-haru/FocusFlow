@@ -60,18 +60,33 @@
     <h4>参加者</h4>
     <div id="participants-list">
         {% for user in room.participants %}
-        <div id="user-{{ user.username }}" class="participant-card">
-            <strong>{{ user.username }}</strong>
-            <p>ステータス: <span class="status">{{ user.status }}</span></p>
-            <div class="progress">
-                <div class="progress-bar" role="progressbar" data-gauge="{{ user.current_gauge_level }}" aria-valuenow="{{ user.current_gauge_level }}" aria-valuemin="0" aria-valuemax="100">
-                    {{ user.current_gauge_level }}%
+        <div id="user-{{ user.username }}" class="participant-card d-flex justify-content-between align-items-center">
+            <div>
+                <strong>{{ user.username }}</strong>
+                <p class="mb-0">ステータス: <span class="status">{{ user.status }}</span></p>
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" data-gauge="{{ user.current_gauge_level }}" aria-valuenow="{{ user.current_gauge_level }}" aria-valuemin="0" aria-valuemax="100">
+                        {{ user.current_gauge_level }}%
+                    </div>
                 </div>
             </div>
+            {% if current_user == room.owner and user != room.owner %}
+            <a href="#" onclick="confirmKick('{{ url_for('main.kick_user', room_id=room.id, user_id=user.id) }}', '{{ user.username }}')" class="btn btn-danger btn-sm">脱退させる</a>
+            {% endif %}
         </div>
         {% endfor %}
     </div>
 </div>
+
+{% if current_user == room.owner %}
+<div class="card mt-4">
+    <h4>管理者設定</h4>
+    <p>このルームの管理者として、以下の操作が可能です。</p>
+    <form id="delete-room-form" action="{{ url_for('main.delete_room_route', room_id=room.id) }}" method="POST" style="display: inline;">
+        <button type="button" id="delete-room-btn" class="btn btn-danger">このルームを削除する</button>
+    </form>
+</div>
+{% endif %}
 
 <div class="card mt-4">
     <h4>チャット</h4>
@@ -211,6 +226,26 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // --- 管理者機能のJavaScript ---
+    const deleteRoomBtn = document.getElementById('delete-room-btn');
+    if (deleteRoomBtn) {
+        deleteRoomBtn.addEventListener('click', () => {
+            showCustomConfirm('本当にこのルームを削除しますか？この操作は取り消せません。', (confirmed) => {
+                if (confirmed) {
+                    document.getElementById('delete-room-form').submit();
+                }
+            });
+        });
+    }
 });
+
+function confirmKick(kickUrl, username) {
+    showCustomConfirm(`${username}さんを本当に脱退させますか？`, (confirmed) => {
+        if (confirmed) {
+            window.location.href = kickUrl;
+        }
+    });
+}
 </script>
 {% endblock %}
