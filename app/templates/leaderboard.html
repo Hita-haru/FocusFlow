@@ -50,7 +50,7 @@
                 <tr>
                     <th>順位</th>
                     <th>ルーム</th>
-                    <th>週間合計集中時間</th>
+                    <th>週間平均集中時間</th>
                 </tr>
             </thead>
             <tbody>
@@ -58,7 +58,7 @@
                 <tr>
                     <td>{{ loop.index }}</td>
                     <td><a href="{{ url_for('main.room', room_id=room.id) }}">{{ room.name }}</a></td>
-                    <td>{{ room.weekly_focus }} 分</td>
+                    <td>{{ room.weekly_focus_avg }} 分</td>
                 </tr>
                 {% else %}
                 <tr>

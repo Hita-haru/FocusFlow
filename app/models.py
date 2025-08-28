@@ -110,20 +110,25 @@ class FocusRoom(db.Model):
         return check_password_hash(self.password_hash, password)
 
     @property
-    def weekly_focus_time(self):
+    def weekly_focus_time_avg(self):
         today = date.today()
         start_of_week = today - timedelta(days=today.weekday())
         start_of_week_dt = datetime.combine(start_of_week, datetime.min.time())
 
-        user_ids = [user.id for user in self.participants]
+        participants = self.participants.all()
+        num_participants = len(participants)
 
-        if not user_ids:
+        if num_participants == 0:
             return 0
 
-        return db.session.query(db.func.sum(FocusSession.duration_minutes)).filter(
+        user_ids = [user.id for user in participants]
+
+        total_focus_time = db.session.query(db.func.sum(FocusSession.duration_minutes)).filter(
             FocusSession.user_id.in_(user_ids),
             FocusSession.timestamp >= start_of_week_dt
         ).scalar() or 0
+        
+        return round(total_focus_time / num_participants, 1)
 
 class ChatMessage(db.Model):
     id = db.Column(db.Integer, primary_key=True)

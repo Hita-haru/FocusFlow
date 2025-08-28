@@ -268,8 +268,8 @@ def leaderboard():
     # ルーム週間ランキング
     rooms = FocusRoom.query.all()
     for room in rooms:
-        room.weekly_focus = room.weekly_focus_time
-    rooms.sort(key=lambda x: x.weekly_focus, reverse=True)
+        room.weekly_focus_avg = room.weekly_focus_time_avg
+    rooms.sort(key=lambda x: x.weekly_focus_avg, reverse=True)
 
     return render_template('leaderboard.html', users=users, user_rank=user_rank, rooms=rooms)
 
