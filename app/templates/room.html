@@ -72,6 +72,7 @@
         <div id="user-{{ user.username }}" class="participant-card">
             <div class="participant-info">
                 <strong>{{ user.username }}</strong>
+                <p class="mb-0"><small>今週の集中時間: {{ user.weekly_focus_time_in_room }}分</small></p>
                 <p class="mb-0">ステータス: <span class="status">{{ user.status }}</span></p>
                 <div class="progress">
                     <div class="progress-bar" role="progressbar" data-gauge="{{ user.current_gauge_level }}" aria-valuenow="{{ user.current_gauge_level }}" aria-valuemin="0" aria-valuemax="100">

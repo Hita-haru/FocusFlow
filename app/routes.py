@@ -398,6 +398,10 @@ def room(room_id):
         room.participants.append(current_user)
         db.session.commit()
 
+    # 参加者の週間集中時間を計算
+    for p in room.participants:
+        p.weekly_focus_time_in_room = p.weekly_focus_time()
+
     # チャット履歴を読み込む (現在の参加者のメッセージのみ)
     participant_ids = [p.id for p in room.participants]
     chat_messages = ChatMessage.query.filter(
