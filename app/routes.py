@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
 import re
 from flask_login import login_user, logout_user, login_required, current_user
-from .models import User, FocusSession, ActivityLog, FocusRoom
+from .models import User, FocusSession, ActivityLog, FocusRoom, ChatMessage
 from . import db
 from sqlalchemy import func
 from datetime import date, timedelta, datetime
@@ -398,7 +398,14 @@ def room(room_id):
         room.participants.append(current_user)
         db.session.commit()
 
-    return render_template('room.html', room=room)
+    # チャット履歴を読み込む (現在の参加者のメッセージのみ)
+    participant_ids = [p.id for p in room.participants]
+    chat_messages = ChatMessage.query.filter(
+        ChatMessage.room_id == room.id,
+        ChatMessage.user_id.in_(participant_ids)
+    ).order_by(ChatMessage.timestamp.asc()).all()
+
+    return render_template('room.html', room=room, chat_messages=chat_messages)
 
 @main.route('/room/<int:room_id>/join', methods=['GET', 'POST'])
 @login_required

@@ -124,3 +124,13 @@ class FocusRoom(db.Model):
             FocusSession.user_id.in_(user_ids),
             FocusSession.timestamp >= start_of_week_dt
         ).scalar() or 0
+
+class ChatMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    room_id = db.Column(db.Integer, db.ForeignKey('focus_room.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    message = db.Column(db.String(200), nullable=False)
+    timestamp = db.Column(db.DateTime, server_default=db.func.now())
+
+    room = db.relationship('FocusRoom', backref=db.backref('chat_messages', cascade="all, delete-orphan", lazy=True))
+    user = db.relationship('User', backref='chat_messages')

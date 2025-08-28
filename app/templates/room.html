@@ -101,7 +101,11 @@
 
 <div class="card mt-4">
     <h4>チャット</h4>
-    <div id="chat-messages"></div>
+    <div id="chat-messages">
+        {% for chat in chat_messages %}
+            <p class="chat-message"><strong>{{ chat.user.username }}:</strong> {{ chat.message }}</p>
+        {% endfor %}
+    </div>
     <form id="chat-form">
         <input type="text" id="chat-input" class="form-control" placeholder="メッセージを入力 (5文字以内)" maxlength="5" autocomplete="off">
         <button type="submit" class="btn btn-primary">送信</button>

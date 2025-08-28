@@ -1,7 +1,7 @@
 from flask_login import current_user
 from flask_socketio import join_room, leave_room, emit
 from . import socketio, db
-from .models import FocusRoom
+from .models import FocusRoom, ChatMessage
 
 @socketio.on('join')
 def on_join(data):
@@ -52,6 +52,10 @@ def on_room_chat(data):
 
     if room is None or current_user not in room.participants:
         return # ルームが存在しないか、ユーザーが参加者でなければ無視
+
+    new_message = ChatMessage(room_id=room_id, user_id=current_user.id, message=msg)
+    db.session.add(new_message)
+    db.session.commit()
 
     emit('new_chat_message', {
         'username': current_user.username,
