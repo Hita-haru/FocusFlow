@@ -16,7 +16,7 @@
             {% if current_user in room.participants %}
                 <a href="{{ url_for('main.room', room_id=room.id) }}" class="btn btn-primary">ルームに入る</a>
             {% else %}
-                <a href="{{ url_for('main.join_room', room_id=room.id) }}" class="btn btn-secondary">参加する</a>
+                <a href="{{ url_for('main.room', room_id=room.id) }}" class="btn btn-secondary">参加する</a>
             {% endif %}
         </li>
         {% else %}

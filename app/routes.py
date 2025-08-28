@@ -360,6 +360,10 @@ def create_room():
         description = request.form.get('description')
         is_public = request.form.get('is_public') == 'on'
         password = request.form.get('password')
+
+        if FocusRoom.query.filter_by(name=name).first():
+            flash('そのルーム名は既に使用されています。別の名前を選択してください。', 'error')
+            return redirect(url_for('main.create_room'))
         
         new_room = FocusRoom(name=name, description=description, is_public=is_public, owner=current_user)
 
