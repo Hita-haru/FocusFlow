@@ -8,7 +8,7 @@ def delete_room(room_id=None, room_name=None):
     """
     IDまたは名前で指定されたフォーカスルームを削除します。
     """
-    # 環境変数FLASK_APPを設定
+    # 例のごとく環境変数FLASK_APPを設定
     os.environ['FLASK_APP'] = 'run.py'
     app = create_app()
     with app.app_context():

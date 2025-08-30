@@ -450,6 +450,8 @@ def kick_user(room_id, user_id):
         flash('そのユーザーはこのルームに参加していません。', 'error')
         return redirect(url_for('main.room', room_id=room.id))
 
+    # 一応管理者のキック防止
+    # ↑どういう状況？
     if user_to_kick == room.owner:
         flash('ルームの管理者をキックすることはできません。', 'error')
         return redirect(url_for('main.room', room_id=room.id))
@@ -463,6 +465,7 @@ def kick_user(room_id, user_id):
 @login_required
 def delete_room_route(room_id):
     room = FocusRoom.query.get_or_404(room_id)
+    # 不正対策
     if current_user != room.owner:
         flash('あなたはこのルームの管理者ではありません。', 'error')
         return redirect(url_for('main.room', room_id=room.id))

@@ -47,7 +47,7 @@ def on_room_chat(data):
     msg = data.get('msg', '').strip()
     room = FocusRoom.query.get(room_id)
     
-    # 5文字以上、いないユーザーのメッセージは無視
+    # 5文字以上、空白メッセージ、いないユーザーのメッセージは無視
     if not msg or len(msg) > 5:
         return
 

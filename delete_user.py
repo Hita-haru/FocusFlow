@@ -28,6 +28,7 @@ def delete_user(user_id=None, email=None, username=None):
                 print(f"エラー: ユーザー名 '{username}' のユーザーは見つかりませんでした。")
                 return
 
+        # ここ重要（一敗）
         if user_to_delete:
             deleted_user_name = user_to_delete.username
             
