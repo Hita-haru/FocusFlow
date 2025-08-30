@@ -45,7 +45,7 @@
             </main>
         </div>
 
-        <!-- Custom Alert Modal -->
+        <!-- カスタムアラートダイアログ -->
         <div id="custom-alert-modal" class="modal" style="display: none;">
             <div class="modal-content">
                 <span class="close-btn" onclick="document.getElementById('custom-alert-modal').style.display='none'">&times;</span>
@@ -53,7 +53,7 @@
             </div>
         </div>
 
-        <!-- Custom Confirm Modal -->
+        <!-- カスタムコンファームダイアログ -->
         <div id="custom-confirm-modal" class="modal" style="display: none;">
             <div class="modal-content">
                 <p id="custom-confirm-message"></p>
@@ -63,7 +63,6 @@
         </div>
 
         <script>
-            // --- Custom Alert and Confirm ---
             function showCustomAlert(message) {
                 document.getElementById('custom-alert-message').textContent = message;
                 document.getElementById('custom-alert-modal').style.display = 'block';
@@ -88,7 +87,6 @@
                 };
             }
 
-            // Close alert modal when clicking outside of it
             window.addEventListener('click', (event) => {
                 const alertModal = document.getElementById('custom-alert-modal');
                 if (event.target == alertModal) {
