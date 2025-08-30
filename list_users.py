@@ -21,5 +21,8 @@ def list_users():
             print(f"ID: {user.id}, ユーザー名: {user.username}, メールアドレス: {user.email}")
         print("---------------------")
 
+        # 合計ユーザー数表示（新機能）
+        print(f"合計ユーザー数: {len(users)}")
+
 if __name__ == '__main__':
     list_users()

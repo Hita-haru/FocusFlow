@@ -7,7 +7,7 @@ def delete_user(user_id=None, email=None, username=None):
     """
     ID、メールアドレス、またはユーザー名で指定されたユーザーを削除します。
     """
-    # 環境変数FLASK_APPを設定
+    # 環境変数FLASK_APPを設定してアプリケーションコンテキストを作成
     os.environ['FLASK_APP'] = 'run.py'
     app = create_app()
     with app.app_context():
