@@ -2,7 +2,7 @@
 
 body {
     background-color: #008080; /* ティールブルー */
-    font-family: "MS PGothic", "ＭＳ Ｐゴシック", sans-serif;
+    font-family: "MS PGothic", "ＭＳ Ｐゴシック", sans-serif; /* warning出てるけど変更するとだめ */
     color: #000;
     font-smooth: never;
     -webkit-font-smoothing: none;

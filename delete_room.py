@@ -31,7 +31,7 @@ def delete_room(room_id=None, room_name=None):
             print(f"ルーム '{deleted_room_name}' を正常に削除しました。")
         else:
             print("エラー: 削除するルームのIDまたは名前を指定してください。")
-
+    
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='データベースからフォーカスルームを削除します。')
     group = parser.add_mutually_exclusive_group(required=True)
