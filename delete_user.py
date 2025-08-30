@@ -1,19 +1,23 @@
-
 import argparse
 import os
 from app import create_app, db
 from app.models import User, FocusSession, ActivityLog, FocusRoom, followers, room_participants
 
-def delete_user(email=None, username=None):
+def delete_user(user_id=None, email=None, username=None):
     """
-    メールアドレスまたはユーザー名で指定されたユーザーを削除します。
+    ID、メールアドレス、またはユーザー名で指定されたユーザーを削除します。
     """
     # 環境変数FLASK_APPを設定
     os.environ['FLASK_APP'] = 'run.py'
     app = create_app()
     with app.app_context():
         user_to_delete = None
-        if email:
+        if user_id:
+            user_to_delete = User.query.get(user_id)
+            if not user_to_delete:
+                print(f"エラー: ID '{user_id}' のユーザーは見つかりませんでした。")
+                return
+        elif email:
             user_to_delete = User.query.filter_by(email=email).first()
             if not user_to_delete:
                 print(f"エラー: メールアドレス '{email}' のユーザーは見つかりませんでした。")
@@ -43,13 +47,14 @@ def delete_user(email=None, username=None):
             db.session.commit()
             print(f"ユーザー '{deleted_user_name}' を正常に削除しました。")
         else:
-            print("エラー: 削除するユーザーのメールアドレスまたはユーザー名を指定してください。")
+            print("エラー: 削除するユーザーのID、メールアドレス、またはユーザー名を指定してください。")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='データベースからユーザーを削除します。')
     group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('--id', type=int, help='削除するユーザーのID')
     group.add_argument('--email', type=str, help='削除するユーザーのメールアドレス')
     group.add_argument('--username', type=str, help='削除するユーザーのユーザー名')
 
     args = parser.parse_args()
-    delete_user(email=args.email, username=args.username)
+    delete_user(user_id=args.id, email=args.email, username=args.username)
