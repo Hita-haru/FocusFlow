@@ -15,14 +15,12 @@
 <div class="container">
     <h2 class="mb-4">フォーカスレポート</h2>
 
-    <!-- 絵文字チャート -->
     <div class="card text-center">
         <h3>今週のあなたの状態</h3>
         <p class="emoji-chart-emoji">{{ status_emoji }}</p>
         <p class="lead">{{ status_text }}</p>
     </div>
 
-    <!-- 総合統計 -->
     <div class="row">
         <div class="col-md-4">
             <div class="card text-center">
@@ -44,19 +42,16 @@
         </div>
     </div>
 
-    <!-- 週間フォーカスグラフ（複合） -->
     <div class="card">
         <h3>直近7日間の活動</h3>
         <canvas id="focusChart"></canvas>
     </div>
 
-    <!-- 比較グラフ -->
     <div class="card">
         <h3>フォローユーザーとの比較 (平均集中時間)</h3>
         <canvas id="comparisonChart"></canvas>
     </div>
 
-    <!-- 最近のセッション履歴 -->
     <div class="card">
         <h3>最近のフォーカス履歴</h3>
         <div class="table-responsive">
@@ -90,6 +85,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
+    // エラーめちゃくちゃ出てるけど多分無視でOK
 document.addEventListener('DOMContentLoaded', () => {
     const chartLabels = {{ chart_labels|tojson }};
     const myChartData = {{ my_chart_data|tojson }};
@@ -98,7 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const textColor = '#f2f2f7';
     const gridColor = 'rgba(242, 242, 247, 0.1)';
 
-    // --- メイングラフ（集中時間とフロー回数） ---
     const ctxMain = document.getElementById('focusChart').getContext('2d');
     new Chart(ctxMain, {
         type: 'bar',
@@ -155,7 +150,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- 比較グラフ（自分とフォロー平均） ---
     const ctxCompare = document.getElementById('comparisonChart').getContext('2d');
     new Chart(ctxCompare, {
         type: 'line',

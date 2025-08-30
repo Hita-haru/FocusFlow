@@ -46,12 +46,13 @@ def on_room_chat(data):
     room_id = data.get('room_id')
     msg = data.get('msg', '').strip()
     room = FocusRoom.query.get(room_id)
-
+    
+    # 5文字以上、いないユーザーのメッセージは無視
     if not msg or len(msg) > 5:
-        return # メッセージが空または5文字を超えていれば無視
+        return
 
     if room is None or current_user not in room.participants:
-        return # ルームが存在しないか、ユーザーが参加者でなければ無視
+        return
 
     new_message = ChatMessage(room_id=room_id, user_id=current_user.id, message=msg)
     db.session.add(new_message)

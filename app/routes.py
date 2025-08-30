@@ -84,13 +84,11 @@ def dashboard():
 @main.route('/report')
 @login_required
 def report():
-    # --- 総合統計 ---
     total_focus_time = db.session.query(func.sum(FocusSession.duration_minutes)).filter(FocusSession.user_id == current_user.id).scalar() or 0
     total_sessions = FocusSession.query.filter_by(user_id=current_user.id).count()
     total_flow_states = ActivityLog.query.filter_by(user_id=current_user.id, activity_type='flow_state').count()
     avg_session_length = round(total_focus_time / total_sessions, 1) if total_sessions > 0 else 0
 
-    # --- グラフデータ (直近7日間) ---
     today = date.today()
     chart_labels = []
     my_chart_data = []
@@ -119,7 +117,6 @@ def report():
         else:
             followed_avg_data.append(0)
 
-    # --- 絵文字チャートロジック ---
     weekly_total_focus = sum(my_chart_data)
     days_with_focus = sum(1 for x in my_chart_data if x > 0)
     weekly_flow_count = sum(flow_chart_data)
@@ -136,7 +133,7 @@ def report():
     status_emoji = '🧐'
     status_text = 'あなたの集中データを分析中です...'
 
-    # 判定ロジック (優先度順)
+    # 優先度順
     if total_sessions > 0:
         if total_sessions <= 5:
             status_emoji = '✨'
@@ -190,7 +187,6 @@ def report():
             status_emoji = '😴'
             status_text = '少し休憩中かな？まずは短い時間から始めてみましょう。'
 
-    # --- 最近のセッション履歴 ---
     recent_sessions = FocusSession.query.filter_by(user_id=current_user.id).order_by(FocusSession.timestamp.desc()).limit(10).all()
 
     return render_template('report.html',

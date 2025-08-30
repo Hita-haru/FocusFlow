@@ -82,6 +82,7 @@
             </div>
             {% if current_user == room.owner and user != room.owner %}
             <div class="participant-actions">
+                <!-- ここVSCodeでエラー出るけど無視 -->
                 <a href="#" onclick="confirmKick('{{ url_for('main.kick_user', room_id=room.id, user_id=user.id) }}', '{{ user.username }}')" class="btn btn-danger btn-sm">脱退させる</a>
             </div>
             {% endif %}
@@ -118,7 +119,6 @@
     <div id="messages" style="height: 100px; overflow-y: scroll; border: 1px solid var(--border-color); padding: 10px; border-radius: var(--border-radius);"></div>
 </div>
 
-<!-- QR Code Modal -->
 <div id="qr-modal" class="modal" style="display: none;">
     <div class="modal-content">
         <span class="close-btn qr-close-btn">&times;</span>
@@ -127,7 +127,6 @@
     </div>
 </div>
 
-<!-- Share URL Modal -->
 <div id="share-modal" class="modal" style="display: none;">
     <div class="modal-content">
         <span class="close-btn share-close-btn">&times;</span>
@@ -144,7 +143,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // ★ 初期ゲージを設定
     document.querySelectorAll('.progress-bar').forEach(bar => {
         const level = bar.getAttribute('data-gauge');
         bar.style.width = `${level}%`;
@@ -154,7 +152,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const socket = io();
     const roomId = "{{ room.id }}";
 
-    // --- Socket.IO イベントリスナー ---
     socket.on('connect', () => {
         socket.emit('join', { room_id: roomId });
     });
@@ -189,7 +186,6 @@ document.addEventListener('DOMContentLoaded', () => {
         socket.emit('leave', { room_id: roomId });
     });
 
-    // --- チャットフォームのロジック ---
     const chatForm = document.getElementById('chat-form');
     const chatInput = document.getElementById('chat-input');
     chatForm.addEventListener('submit', (e) => {
@@ -201,7 +197,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- 共有ボタンのロジック ---
     const shareBtn = document.getElementById('share-btn');
     const qrCodeBtn = document.getElementById('qr-code-btn');
 
@@ -243,7 +238,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 管理者機能のJavaScript ---
     const deleteRoomBtn = document.getElementById('delete-room-btn');
     if (deleteRoomBtn) {
         deleteRoomBtn.addEventListener('click', () => {

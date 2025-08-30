@@ -46,6 +46,7 @@
 		<h3>フォロー中 ({{ user.followed.count() }})</h3>
 		<div class="list-group">
 			{% for followed_user in user.followed %}
+				<!-- ここのVSCodeのエラーは無視 -->
 				<a href="{{ url_for('main.user', username=followed_user.username) }}" 
 				   class="list-group-item list-group-item-action collapsible-following-item" 
 				   style="display: {% if loop.index > 5 %}'none'{% else %}'block'{% endif %}; padding: 10px; margin-bottom: 5px; border: 1px solid var(--border-color); border-radius: 8px; text-decoration: none; color: var(--text-color);">
@@ -64,6 +65,7 @@
 		<h3>フォロワー ({{ user.followers.count() }})</h3>
 		<div class="list-group">
 			{% for follower in user.followers %}
+				<!-- ここのVSCodeのエラーも無視 -->
 				<a href="{{ url_for('main.user', username=follower.username) }}" 
 				   class="list-group-item list-group-item-action collapsible-follower-item" 
 				   style="display: {% if loop.index > 5 %}'none'{% else %}'block'{% endif %}; padding: 10px; margin-bottom: 5px; border: 1px solid var(--border-color); border-radius: 8px; text-decoration: none; color: var(--text-color);">
@@ -104,7 +106,6 @@
 		</table>
 	</section>
 
-<!-- QR Code Modal -->
 <div id="qr-modal" class="modal" style="display: none;">
     <div class="modal-content">
         <span class="close-btn qr-close-btn">&times;</span>
@@ -113,7 +114,6 @@
     </div>
 </div>
 
-<!-- Share URL Modal -->
 <div id="share-modal" class="modal" style="display: none;">
     <div class="modal-content">
         <span class="close-btn share-close-btn">&times;</span>
@@ -175,6 +175,7 @@
 				});
 			}
 
+			// ここのVscodeのエラーは無視
 			setupToggler('toggle-following-btn', '.collapsible-following-item', {{ user.followed.count() }});
 			setupToggler('toggle-followers-btn', '.collapsible-follower-item', {{ user.followers.count() }});
 		});

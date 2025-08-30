@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>フォーカスモード - FocusFlow</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- スマホなどに対応 -->
     <style>
         html, body { overflow: hidden; }
         .focus-container { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100vw; height: 100vh; background-color: var(--background-color); color: var(--text-color); text-align: center; transition: background-color 0.5s; box-sizing: border-box; }
@@ -62,7 +63,6 @@
         効果音: <a href="https://otologic.jp" target="_blank" style="color: rgba(255, 255, 255, 0.6);">OtoLogic</a>
     </div>
 
-    <!-- Custom Modals -->
     <div id="custom-alert-modal" class="modal" style="display: none;">
         <div class="modal-content">
             <span class="close-btn" onclick="document.getElementById('custom-alert-modal').style.display='none'">&times;</span>
@@ -78,7 +78,6 @@
     </div>
 
     <script>
-        // --- Custom Alert and Confirm Functions ---
         function showCustomAlert(message) {
             document.getElementById('custom-alert-message').textContent = message;
             document.getElementById('custom-alert-modal').style.display = 'block';
@@ -110,7 +109,6 @@
         });
 
         document.addEventListener('DOMContentLoaded', () => {
-            // --- Main Application Logic ---
             const FOCUS_TIME_SECONDS = 25 * 60;
             const BREAK_TIME_SECONDS = 5 * 60;
             const GAUGE_RECOVERY_RATE = 0.2;
@@ -273,7 +271,6 @@
                     tick();
                     elements.endSessionBtn.addEventListener('click', endSession);
 
-                    // Log session start activity
                     fetch("{{ url_for('main.log_activity') }}", {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },

@@ -3,8 +3,6 @@ from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import date, timedelta, datetime
 
-# 中間テーブルは、それを使用するクラスよりも前に定義する必要があります
-
 # フォロー関係を定義するための中間テーブル
 followers = db.Table('followers',
     db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
